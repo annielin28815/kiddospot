@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  reviews   Review[]
+  favorites Favorite[]
+}
+
+model Place {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  address     String
+
+  googlePlaceId String? @unique
+
+  lat Float
+  lng Float
+
+  avgRating   Float?
+  reviewCount Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  reviews  Review[]
+  tags     PlaceTag[]
+  facility Facility?
+  favorites Favorite[]
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  category String?
+
+  places PlaceTag[]
+}
+
+model PlaceTag {
+  placeId String
+  tagId   String
+
+  place Place @relation(fields: [placeId], references: [id])
+  tag   Tag   @relation(fields: [tagId], references: [id])
+
+  @@id([placeId, tagId])
+}
+
+model Facility {
+  placeId          String  @id
+  strollerFriendly Boolean @default(false)
+  diaperStation    Boolean @default(false)
+  nursingRoom      Boolean @default(false)
+  playArea         Boolean @default(false)
+  parking          Boolean @default(false)
+
+  place Place @relation(fields: [placeId], references: [id])
+}
+
+model Review {
+  id      String @id @default(uuid())
+  userId  String
+  placeId String
+
+  serviceScore     Int
+  strollerScore    Int
+  facilityScore    Int
+  cleanlinessScore Int
+  transportScore   Int
+
+  comment String?
+
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@index([placeId])
+  @@index([userId])
+}
+
+model Favorite {
+  userId  String
+  placeId String
+
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  place Place @relation(fields: [placeId], references: [id])
+
+  @@id([userId, placeId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
