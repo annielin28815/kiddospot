@@ -22,13 +22,20 @@ export default function Map({ places }: any) {
       <TileLayer
         attribution="© OpenStreetMap"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+        />
 
-      {places.map((place: any) => (
-        <Marker key={place.id} position={[place.lat, place.lng]}>
-          <Popup>{place.name}</Popup>
-        </Marker>
-      ))}
+      {places.length > 0 && places.map((place: any) => {
+        const lat = Number(place.lat);
+        const lng = Number(place.lng);
+      
+        if (isNaN(lat) || isNaN(lng)) return null;
+      
+          return (
+            <Marker key={place.id} position={[lat, lng]}>
+              <Popup>{place.name}</Popup>
+            </Marker>
+          );
+        })}
     </MapContainer>
   );
 }
