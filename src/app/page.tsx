@@ -11,6 +11,8 @@ const Map = dynamic(() => import("../components/Map"), {
 
 export default function Home() {
   const [places, setPlaces] = useState([]);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/places")
@@ -29,11 +31,23 @@ export default function Home() {
       </section>
       <main className="h-screen flex">
         <div className="w-1/3 border-r">
-          <PlaceList places={places} />
+          <PlaceList
+            places={places}
+            selectedPlaceId={selectedPlaceId}
+            hoveredPlaceId={hoveredPlaceId}
+            onSelect={setSelectedPlaceId}
+            onHover={setHoveredPlaceId}
+          />
+
         </div>
 
         <div className="flex-1">
-          <Map places={places} />
+          <Map
+            places={places}
+            selectedPlaceId={selectedPlaceId}
+            hoveredPlaceId={hoveredPlaceId}
+            onSelect={setSelectedPlaceId}
+          />
         </div>
       </main>
     </>
