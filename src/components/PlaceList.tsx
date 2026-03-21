@@ -13,7 +13,7 @@ export default function PlaceList({
 }) {
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
-      {places.map((place: any) => (
+      {places.length > 0 && places.map((place) => (
         <div
           key={place.id}
           onClick={() => onSelect(place.id)}

@@ -89,6 +89,11 @@ export default function Map({
       zoom={13}
       style={{ height: "100%", width: "100%" }}
       closePopupOnClick={true}
+      whenCreated={(map) => {
+        map.on("click", (e: any) => {
+          console.log(e.latlng);
+        });
+      }}
     >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
@@ -107,7 +112,7 @@ export default function Map({
       )}
 
       {/* 所有 marker */}
-      {places.map((place) => {
+      {places.length > 0 && places.map((place) => {
         const rating = place.rating ?? "尚無評分";
         return (
           <Marker

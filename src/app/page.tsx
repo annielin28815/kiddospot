@@ -4,20 +4,29 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import PlaceList from "../components/PlaceList";
 import LoginButton from "../components/LoginButton"
+import AddPlaceForm from "../components/AddPlaceForm";
 
 const Map = dynamic(() => import("../components/Map"), {
   ssr: false,
 });
 
+
 export default function Home() {
   const [places, setPlaces] = useState([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
+  
+  const handleCreated = (newPlace: any) => {
+    setPlaces((prev) => [...prev, newPlace])
+  }
 
   useEffect(() => {
     fetch("/api/places")
       .then((res) => res.json())
-      .then((data) => setPlaces(data));
+      .then((data) => {
+        console.log("🔥API data:", data);
+        setPlaces(data)
+      });
   }, []);
 
   return (
@@ -31,6 +40,7 @@ export default function Home() {
       </section>
       <main className="h-screen flex">
         <div className="w-1/3 border-r">
+          <AddPlaceForm onCreated={handleCreated} />
           <PlaceList
             places={places}
             selectedPlaceId={selectedPlaceId}

@@ -20,3 +20,27 @@ export async function GET() {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+
+    const place = await prisma.place.create({
+      data: {
+        name: body.name,
+        address: body.address,
+        lat: Number(body.lat),
+        lng: Number(body.lng),
+        description: body.description || "",
+      },
+    });
+
+    return NextResponse.json(place);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to create place" },
+      { status: 500 }
+    );
+  }
+}
