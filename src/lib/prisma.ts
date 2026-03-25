@@ -1,13 +1,14 @@
 import { PrismaClient } from "@prisma/client";
-// import { PrismaClient } from "@/node_modules/.prisma/client/index";
 
 const globalForPrisma = global as unknown as {
-  prisma: PrismaClient;
+  prisma: PrismaClient | undefined;
 };
 
 const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient();
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ["query"], // 可選
+  });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

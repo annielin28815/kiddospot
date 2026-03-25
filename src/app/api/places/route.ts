@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import prisma from "@/src/lib/prisma";
+import { authOptions } from "@/src/lib/auth";
 
 export async function GET() {
   try {
@@ -9,6 +11,16 @@ export async function GET() {
         tags: {
           include: {
             tag: true,
+          },
+        },
+        favorites: {
+          select: {
+            userId: true,
+          }
+        },
+        createdBy: {
+          select: {
+            name: true,
           },
         },
       },
@@ -23,19 +35,31 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+  
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  
     const body = await req.json();
+
+    const lat = Number(body.lat);
+    const lng = Number(body.lng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      return Response.json({ error: "Invalid lat/lng" }, { status: 400 });
+    }
 
     const place = await prisma.place.create({
       data: {
-        name: body.name,
-        address: body.address,
-        lat: Number(body.lat),
-        lng: Number(body.lng),
-        description: body.description || "",
+        ...body,
+        lat,
+        lng,
+        createdById: session.user.id
       },
     });
-
-    return NextResponse.json(place);
+  
+    return Response.json(place);
   } catch (error) {
     console.error(error);
     return NextResponse.json(

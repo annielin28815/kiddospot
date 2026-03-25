@@ -1,13 +1,18 @@
 "use client";
-import { useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+
+import { useRef, useState, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import toast from "react-hot-toast";
 
-const createMarkerIcon = (
-  isSelected: boolean,
-  isHovered: boolean
-) =>
+const createMarkerIcon = (isSelected: boolean, isHovered: boolean) =>
   L.divIcon({
     className: "custom-marker",
     html: `<div class="
@@ -16,15 +21,14 @@ const createMarkerIcon = (
       ${isHovered ? "hovered" : ""}
     "></div>`,
   });
+
 function FlyToLocation({ place, onDone }: any) {
   const map = useMap();
 
   useEffect(() => {
     if (!place) return;
 
-    map.flyTo([place.lat, place.lng], 15, {
-      duration: 0.8,
-    });
+    map.flyTo([place.lat, place.lng], 15, { duration: 0.8 });
 
     map.once("moveend", () => {
       onDone?.();
@@ -34,73 +38,80 @@ function FlyToLocation({ place, onDone }: any) {
   return null;
 }
 
+type Favorite = {
+  userId: string;
+};
+
+type Place = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  favorites?: Favorite[];
+};
+
 export default function Map({
   places,
+  setPlaces,
+  userId,
   selectedPlaceId,
   hoveredPlaceId,
-  onSelect
+  onSelect,
 }: {
-  places: any[];
+  places: Place[];
+  setPlaces: React.Dispatch<React.SetStateAction<Place[]>>;
+  userId?: string;
   selectedPlaceId: string | null;
   hoveredPlaceId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
 }) {
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
-  const selectedPlace = places.find(
-    (p: any) => p.id === selectedPlaceId
-  );
+  const [favPlaces, setFavPlaces] = useState<Place[]>([]);
 
-  useEffect(() => {
-    if (!selectedPlaceId) return;
+  const selectedPlace = Array.isArray(places)
+    ? places.find((p: any) => p.id === selectedPlaceId)
+    : null;
+
+    const toggleFavorite = async (placeId: string) => {
+      if (!userId) return;
     
-    const marker = markerRefs.current[selectedPlaceId];
-
-    setTimeout(() => {
-      if (marker) {
-        marker.openPopup();
+      setPlaces((prev) =>
+        prev.map((p) => {
+          if (p.id !== placeId) return p;
+    
+          const isFav = p.favorites?.some((f) => f.userId === userId);
+    
+          return {
+            ...p,
+            favorites: isFav
+              ? p.favorites?.filter((f) => f.userId !== userId)
+              : [...(p.favorites || []), { userId }],
+          };
+        })
+      );
+    
+      try {
+        await fetch("/api/favorites", {
+          method: "POST",
+          body: JSON.stringify({ placeId }),
+        });
+      } catch (err) {
+        console.error("favorite error", err);
       }
-    }, 20)
-  }, [selectedPlaceId]);
-
-  useEffect(() => {
-    Object.entries(markerRefs.current).forEach(([id, marker]) => {
-      const el = marker.getElement();
-      if (!el) return;
-  
-      if (id === hoveredPlaceId) {
-        el.classList.add("hovered");
-      } else {
-        el.classList.remove("hovered");
-      }
-    });
-  }, [hoveredPlaceId]);
-
-  useEffect(() => {
-    Object.values(markerRefs.current).forEach((marker:any) => {
-      marker.on("popupclose", () => {
-        onSelect(null as any); // 👈 清掉選取
-      });
-    });
-  }, []);
+    };
 
   return (
     <MapContainer
-      center={[25.0330, 121.5654]} // 預設台北
+      center={[25.033, 121.5654]}
       zoom={13}
       style={{ height: "100%", width: "100%" }}
       closePopupOnClick={true}
-      whenCreated={(map) => {
-        map.on("click", (e: any) => {
-          console.log(e.latlng);
-        });
-      }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
+        attribution="&copy; OpenStreetMap"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* 讓地圖跟著動 */}
       {selectedPlace && (
         <FlyToLocation
           place={selectedPlace}
@@ -111,9 +122,11 @@ export default function Map({
         />
       )}
 
-      {/* 所有 marker */}
-      {places.length > 0 && places.map((place) => {
-        const rating = place.rating ?? "尚無評分";
+      {places.map((place) => {
+        const isFavorited =
+        !!userId &&
+        (place.favorites ?? []).some((f) => f.userId === userId);
+
         return (
           <Marker
             key={place.id}
@@ -122,44 +135,48 @@ export default function Map({
               selectedPlaceId === place.id,
               hoveredPlaceId === place.id
             )}
+            ref={(ref) => {
+              if (ref) markerRefs.current[place.id] = ref;
+            }}
             eventHandlers={{
               click: () => onSelect(place.id),
-            }}
-            ref={(ref) => {
-              if (ref) {
-                markerRefs.current[place.id] = ref;
-              }
             }}
           >
             <Popup closeButton={false}>
               <div className="w-[200px] space-y-1">
-                <h3 className="font-semibold text-sm leading-tight">
+                <h3 className="font-semibold text-sm">
                   {place.name}
                 </h3>
 
-                <div className="flex items-center text-xs text-gray-500 gap-1">
-                  <span>⭐</span>
-                  <span>{place.rating ?? "尚無評分"}</span>
-                </div>
+                <p className="text-xs text-gray-500">
+                  ⭐ {place.avgRating ?? "尚無評分"}
+                </p>
 
-                <p className="text-xs text-gray-600 line-clamp-2 leading-snug">
+                <p className="text-xs line-clamp-2 text-gray-600">
                   {place.description || "暫無描述"}
                 </p>
 
-                <div className="pt-1">
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`}
-                    target="_blank"
-                    className="text-xs text-blue-500 hover:underline"
-                  >
-                    在 Google Maps 查看 →
-                  </a>
-                </div>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`}
+                  target="_blank"
+                  className="text-xs text-blue-500 hover:underline"
+                >
+                  在 Google Maps 查看 →
+                </a>
+
+                {/* ❤️ 收藏按鈕 */}
+                <button
+                  onClick={() => toggleFavorite(place.id)}
+                  className="text-sm mt-1"
+                >
+                  {isFavorited ? "❤️ 已收藏" : "🤍 收藏"}
+                </button>
+
+                <p>by {place.createdBy?.name}</p>
               </div>
             </Popup>
           </Marker>
-
-        )
+        );
       })}
     </MapContainer>
   );

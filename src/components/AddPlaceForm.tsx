@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function AddPlaceForm({ onCreated }: any) {
   const [form, setForm] = useState({
@@ -14,14 +15,27 @@ export default function AddPlaceForm({ onCreated }: any) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    if (isNaN(Number(form.lat)) || isNaN(Number(form.lng))) {
+      alert("請輸入正確的經緯度！");
+      return;
+    }
+
+    const payload = {
+      ...form,
+      lat: parseFloat(form.lat),
+      lng: parseFloat(form.lng),
+    };
+
     const res = await fetch("/api/places", {
       method: "POST",
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
 
-    onCreated(data); // 👈 通知外層更新
+    onCreated(data);
+    toast.success("新增成功 🎉");
+    setForm({ name: "", address: "", lat: "", lng: "", description: "" });
   };
 
   return (

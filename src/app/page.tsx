@@ -5,26 +5,28 @@ import dynamic from "next/dynamic";
 import PlaceList from "../components/PlaceList";
 import LoginButton from "../components/LoginButton"
 import AddPlaceForm from "../components/AddPlaceForm";
+import { Place } from "../types/place";
+import { useSession } from "next-auth/react";
 
 const Map = dynamic(() => import("../components/Map"), {
   ssr: false,
 });
-
-
 export default function Home() {
-  const [places, setPlaces] = useState([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
+  const { data: session } = useSession();
+  console.log(session)
   
-  const handleCreated = (newPlace: any) => {
-    setPlaces((prev) => [...prev, newPlace])
-  }
+  const handleCreated = (newPlace: Place) => {
+    setPlaces((prev) => [...prev, newPlace]);
+    setSelectedPlaceId(newPlace.id);
+  };
 
   useEffect(() => {
     fetch("/api/places")
       .then((res) => res.json())
       .then((data) => {
-        console.log("🔥API data:", data);
         setPlaces(data)
       });
   }, []);
@@ -53,7 +55,9 @@ export default function Home() {
 
         <div className="flex-1">
           <Map
+            userId={session?.user?.id}
             places={places}
+            setPlaces={setPlaces}
             selectedPlaceId={selectedPlaceId}
             hoveredPlaceId={hoveredPlaceId}
             onSelect={setSelectedPlaceId}
