@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -66,39 +66,10 @@ export default function Map({
   onSelect: (id: string | null) => void;
 }) {
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
-  const [favPlaces, setFavPlaces] = useState<Place[]>([]);
 
   const selectedPlace = Array.isArray(places)
     ? places.find((p: any) => p.id === selectedPlaceId)
     : null;
-
-    const toggleFavorite = async (placeId: string) => {
-      if (!userId) return;
-    
-      setPlaces((prev) =>
-        prev.map((p) => {
-          if (p.id !== placeId) return p;
-    
-          const isFav = p.favorites?.some((f) => f.userId === userId);
-    
-          return {
-            ...p,
-            favorites: isFav
-              ? p.favorites?.filter((f) => f.userId !== userId)
-              : [...(p.favorites || []), { userId }],
-          };
-        })
-      );
-    
-      try {
-        await fetch("/api/favorites", {
-          method: "POST",
-          body: JSON.stringify({ placeId }),
-        });
-      } catch (err) {
-        console.error("favorite error", err);
-      }
-    };
 
   return (
     <MapContainer
@@ -123,10 +94,6 @@ export default function Map({
       )}
 
       {places.map((place) => {
-        const isFavorited =
-        !!userId &&
-        (place.favorites ?? []).some((f) => f.userId === userId);
-
         return (
           <Marker
             key={place.id}
@@ -163,15 +130,6 @@ export default function Map({
                 >
                   在 Google Maps 查看 →
                 </a>
-
-                {/* ❤️ 收藏按鈕 */}
-                <button
-                  onClick={() => toggleFavorite(place.id)}
-                  className="text-sm mt-1"
-                >
-                  {isFavorited ? "❤️ 已收藏" : "🤍 收藏"}
-                </button>
-
                 <p>by {place.createdBy?.name}</p>
               </div>
             </Popup>

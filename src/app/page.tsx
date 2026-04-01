@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import PlaceList from "../components/PlaceList";
 import LoginButton from "../components/LoginButton"
 import AddPlaceForm from "../components/AddPlaceForm";
+import PlacesClient from "../components/PlaceClient";
 import { Place } from "../types/place";
 import { useSession } from "next-auth/react";
 
@@ -32,38 +33,12 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <section className="flex items-center justify-center">
-        <h1 className="text-4xl font-bold">
-          KiddoSpot
-        </h1>
+    <section className="flex flex-col h-screen">
+      <h1 className="text-4xl font-bold">KiddoSpot</h1>
 
-        <LoginButton />
-      </section>
-      <main className="h-screen flex">
-        <div className="w-1/3 border-r">
-          <AddPlaceForm onCreated={handleCreated} />
-          <PlaceList
-            places={places}
-            selectedPlaceId={selectedPlaceId}
-            hoveredPlaceId={hoveredPlaceId}
-            onSelect={setSelectedPlaceId}
-            onHover={setHoveredPlaceId}
-          />
-
-        </div>
-
-        <div className="flex-1">
-          <Map
-            userId={session?.user?.id}
-            places={places}
-            setPlaces={setPlaces}
-            selectedPlaceId={selectedPlaceId}
-            hoveredPlaceId={hoveredPlaceId}
-            onSelect={setSelectedPlaceId}
-          />
-        </div>
-      </main>
-    </>
+      <div className="flex-1">
+        <PlacesClient places={places} />
+      </div>
+    </section>
   )
 }
