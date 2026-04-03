@@ -28,6 +28,10 @@ export default function AddPlaceForm({ onCreated }: any) {
 
     const res = await fetch("/api/places", {
       method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 

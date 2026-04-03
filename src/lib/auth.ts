@@ -13,11 +13,26 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
+  session: {
+    strategy: "jwt", // ⭐ 明確指定（避免混亂）
+  },
+
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    async jwt({ token, user }) {
+      // 🟢 第一次登入（user 會存在）
+      if (user) {
+        token.userId = user.id; // ✅ 直接用 adapter 提供的 id（不用再查 DB）
       }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      // 🟢 把 userId 注入 session
+      if (session.user && token.userId) {
+        session.user.id = token.userId as string;
+      }
+
       return session;
     },
   },

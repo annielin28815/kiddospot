@@ -36,6 +36,9 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+
+    console.log("🔥 ADD PLACE SESSION:", session);
+    console.log("🔥 USER:", session?.user);
   
     if (!session?.user?.id) {
       return new Response("Unauthorized", { status: 401 });
