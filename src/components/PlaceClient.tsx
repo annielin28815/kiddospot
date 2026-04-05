@@ -32,13 +32,14 @@ export default function PlacesClient({ places }) {
     setSelectedPlaceId(newPlace.id);
   };
 
+  if(clientPlaces === undefined || status === "loading") return null;
+  // console.log(clientPlaces)
   const filteredPlaces = clientPlaces.filter((p) => {
     if (!showFavoritesOnly) return true;
     if (!userId) return false;
     return p.favorites?.some((f) => f.userId === userId);
   });
 
-  if(status === "loading") return null;
 
   return (
     <div className="h-full flex flex-col">
@@ -81,8 +82,15 @@ export default function PlacesClient({ places }) {
       {showCreateModal && (
         <ModalPortal>
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
-            <div className="bg-white p-4 rounded w-[400px]">
-              <h2 className="text-lg font-bold mb-2">新增地點</h2>
+            <div className="relative bg-white rounded w-[400px] rounded-2xl shadow-md">
+              {/* ❌ 右上角關閉 */}
+              <button
+                type="button"
+                onClick={()=>setShowCreateModal(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
+              >
+                ✕
+              </button>
 
               <AddPlaceForm
                 onCreated={(place) => {
@@ -91,9 +99,9 @@ export default function PlacesClient({ places }) {
                 }}
               />
 
-              <button onClick={() => setShowCreateModal(false)}>
+              {/* <button onClick={() => setShowCreateModal(false)}>
                 關閉
-              </button>
+              </button> */}
             </div>
           </div>
         </ModalPortal>

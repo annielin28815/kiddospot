@@ -45,10 +45,10 @@ model Place {
   createdById String?
   createdBy   User? @relation(fields: [createdById], references: [id])
 
-  reviews  Review[]
-  tags     PlaceTag[]
-  facility Facility?
-  favorites Favorite[]
+  reviews    Review[]
+  tags       PlaceTag[]
+  facilities PlaceFacility[]
+  favorites  Favorite[]
 }
 
 model Tag {
@@ -70,14 +70,20 @@ model PlaceTag {
 }
 
 model Facility {
-  placeId          String  @id
-  strollerFriendly Boolean @default(false)
-  diaperStation    Boolean @default(false)
-  nursingRoom      Boolean @default(false)
-  playArea         Boolean @default(false)
-  parking          Boolean @default(false)
+  id   String @id @default(uuid())
+  name String @unique
 
-  place Place @relation(fields: [placeId], references: [id])
+  places PlaceFacility[]
+}
+
+model PlaceFacility {
+  placeId    String
+  facilityId String
+
+  place    Place    @relation(fields: [placeId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+
+  @@id([placeId, facilityId])
 }
 
 model Review {

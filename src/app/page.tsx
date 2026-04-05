@@ -17,7 +17,6 @@ export default function Home() {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
   const { data: session } = useSession();
-  console.log(session)
   
   const handleCreated = (newPlace: Place) => {
     setPlaces((prev) => [...prev, newPlace]);
