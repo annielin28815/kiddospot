@@ -32,11 +32,17 @@ export default function Home() {
   }, []);
 
   return (
-    <section className="flex flex-col h-screen">
-      <h1 className="text-4xl font-bold">KiddoSpot</h1>
+    <section className="min-h-screen bg-[#fffaf3] flex justify-center">
+      <div className="w-full max-w-[720px] flex flex-col">
+        
+        <h1 className="text-2xl font-semibold px-4 py-3 border-b bg-white/80 backdrop-blur sticky top-0 z-10">
+          KiddoSpot
+        </h1>
 
-      <div className="flex-1">
-        <PlacesClient places={places} />
+        <div className="flex-1">
+          <PlacesClient places={places} />
+        </div>
+
       </div>
     </section>
   )

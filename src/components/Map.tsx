@@ -12,8 +12,19 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import toast from "react-hot-toast";
 
+const defaultIcon = {
+  scale: 1,
+};
+
+const highlightedIcon = {
+  scale: 1.4,
+  zIndex: 1000,
+};
+
 const createMarkerIcon = (isSelected: boolean, isHovered: boolean) =>
   L.divIcon({
+    scale: isHovered ? 1.4 : 1,
+    zIndex: isHovered ? 1000 : 1,
     className: "custom-marker",
     html: `<div class="
       marker-dot
@@ -110,7 +121,47 @@ export default function Map({
             }}
           >
             <Popup closeButton={false}>
-              <div className="w-[200px] space-y-1">
+            <div>
+            {/* <div className="leaflet-popup-content-wrapper shadow-md border border-[#f0e0cc]"> */}
+              <h3 className="font-semibold text-[#4a2e00] text-sm leading-snug">
+                {place.name}
+              </h3>
+
+              <p className="text-xs text-[#8a6a4a] leading-snug">
+                📍 {place.address}
+              </p>
+
+              {place.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {place.tags.map((tag) => (
+                    <span
+                      key={tag.tagId}
+                      className="px-2 py-0.5 text-[10px] rounded-md bg-[#fff4e5] text-[#8a4b00]"
+                    >
+                      {tag.tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {place.facilities?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {place.facilities.map((f) => (
+                    <span
+                      key={f.facilityId}
+                      className="px-2 py-0.5 text-[10px] rounded-md bg-[#f7e6d2] text-[#6b3a00]"
+                    >
+                      {f.facility.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[10px] text-[#b8a08c] pt-1 border-t">
+                {place.createdBy?.name.trim() ? "by " + place.createdBy?.name.trim() : "官方推薦"}
+              </p>
+            </div>
+              {/* <div className="w-[200px] space-y-1">
                 <h3 className="font-semibold text-sm">
                   {place.name}
                 </h3>
@@ -155,7 +206,7 @@ export default function Map({
                 <p className="text-xs text-[#8a6a4a]">
                   {place.createdBy?.name.trim() ? "by " + place.createdBy?.name.trim() : "官方推薦"}
                 </p>
-              </div>
+              </div> */}
             </Popup>
           </Marker>
         );
