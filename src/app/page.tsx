@@ -1,49 +1,47 @@
-"use client";
+import Link from "next/link";
+import BrandLogo from "../components/BrandLogo";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import PlaceList from "../components/PlaceList";
-import LoginButton from "../components/LoginButton"
-import AddPlaceForm from "../components/AddPlaceForm";
-import PlacesClient from "../components/PlaceClient";
-import { Place } from "../types/place";
-import { useSession } from "next-auth/react";
-
-const Map = dynamic(() => import("../components/Map"), {
-  ssr: false,
-});
-export default function Home() {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
-  const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
-  const { data: session } = useSession();
-  
-  const handleCreated = (newPlace: Place) => {
-    setPlaces((prev) => [...prev, newPlace]);
-    setSelectedPlaceId(newPlace.id);
-  };
-
-  useEffect(() => {
-    fetch("/api/places")
-      .then((res) => res.json())
-      .then((data) => {
-        setPlaces(data)
-      });
-  }, []);
-
+export default function LandingPage() {
   return (
-    <section className="min-h-screen bg-[#fffaf3] flex justify-center">
-      <div className="w-full max-w-[720px] flex flex-col">
-        
-        <h1 className="text-2xl font-semibold px-4 py-3 border-b bg-white/80 backdrop-blur sticky top-0 z-10">
-          KiddoSpot
-        </h1>
-
-        <div className="flex-1">
-          <PlacesClient places={places} />
+    <main className="min-h-screen bg-brand-cream text-brand-ink dark:bg-[#1F1A17] dark:text-white">
+      <div className="mx-auto flex min-h-screen w-full max-w-[720px] flex-col px-6 py-8">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm shadow-soft dark:bg-white/10">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-brand-peach" />
+            Calm, playful, kid-friendly
+          </div>
         </div>
 
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <BrandLogo size={180} showText={false} />
+
+          <div className="mt-8 text-center">
+            <p className="mb-4 text-sm tracking-[0.2em] text-brand-softInk dark:text-white/70">
+              FIND FAMILY-FRIENDLY PLACES
+            </p>
+
+            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
+              Discover joyful spots
+              <br />
+              for little adventures.
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-brand-softInk dark:text-white/70 sm:text-base">
+              Explore parks, restaurants, indoor spaces, and family-friendly
+              facilities with a warm, playful map experience.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end pt-6">
+          <Link
+            href="/home"
+            className="inline-flex items-center rounded-full bg-brand-ink px-6 py-3 text-sm font-medium text-white shadow-soft transition hover:scale-[1.02] hover:opacity-95 dark:bg-white dark:text-[#1F1A17]"
+          >
+            Start
+          </Link>
+        </div>
       </div>
-    </section>
-  )
+    </main>
+  );
 }

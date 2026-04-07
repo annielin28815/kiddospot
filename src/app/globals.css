@@ -1,27 +1,41 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #FDF3ED;
+  --color-foreground: #3A2E2A;
+
+  --color-brand-peach: #F4A261;
+  --color-brand-lavender: #B8A1E3;
+  --color-brand-mint: #8CBF9F;
+  --color-brand-sky: #7FA7C9;
+  --color-brand-cream: #FDF3ED;
+  --color-brand-sand: #F6EBDD;
+  --color-brand-ink: #3A2E2A;
+  --color-brand-softInk: #6B5B52;
+  --color-brand-line: #EADBC8;
+
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: monospace;
+
+  --shadow-soft: 0 8px 30px rgba(58, 46, 42, 0.08);
+  --radius-3xl: 1.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-background: #1f1a17;
+    --color-foreground: #ededed;
   }
 }
 
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
+  height: 100%;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -37,21 +51,19 @@ body {
 .marker-dot {
   width: 14px;
   height: 14px;
-  background: #3b82f6; /* default 藍色 */
+  background: #7FA7C9;
   border-radius: 50%;
   transition: all 0.2s ease;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
 
-/* hover */
 .marker-dot.hovered {
-  background: #f97316;
+  background: #F4A261;
   transform: scale(1.3);
 }
 
-/* selected */
 .marker-dot.selected {
-  background: #ef4444;
+  background: #B8A1E3;
   transform: scale(1.6);
 }
 
@@ -60,4 +72,19 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease;
 }

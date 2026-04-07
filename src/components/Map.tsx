@@ -10,41 +10,65 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import toast from "react-hot-toast";
 
-const defaultIcon = {
-  scale: 1,
-};
+function ResizeFix() {
+  const map = useMap();
 
-const highlightedIcon = {
-  scale: 1.4,
-  zIndex: 1000,
-};
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
-const createMarkerIcon = (isSelected: boolean, isHovered: boolean) =>
-  L.divIcon({
-    scale: isHovered ? 1.4 : 1,
-    zIndex: isHovered ? 1000 : 1,
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  return null;
+}
+
+const createMarkerIcon = (isSelected: boolean, isHovered: boolean) => {
+  let bg = "#7FA7C9"; // 預設藍色
+
+  if (isSelected) {
+    bg = "#EF4444"; // 紅色
+  } else if (isHovered) {
+    bg = "#F4A261"; // hover 橘色（可選）
+  }
+
+  return L.divIcon({
     className: "custom-marker",
-    html: `<div class="
-      marker-dot
-      ${isSelected ? "selected" : ""}
-      ${isHovered ? "hovered" : ""}
-    "></div>`,
+    html: `
+      <div style="
+        width: 14px;
+        height: 14px;
+        background: ${bg};
+        border-radius: 9999px;
+        border: 2px solid white;
+        box-shadow: 0 0 6px rgba(0,0,0,0.2);
+        transform: scale(${isSelected ? 1.5 : isHovered ? 1.3 : 1});
+        transition: all 0.2s ease;
+      "></div>
+    `,
   });
+};
 
 function FlyToLocation({ place, onDone }: any) {
   const map = useMap();
 
   useEffect(() => {
-    if (!place) return;
+    if (!place?.lat || !place?.lng) return;
 
-    map.flyTo([place.lat, place.lng], 15, { duration: 0.8 });
+    map.flyTo([Number(place.lat), Number(place.lng)], 15, { duration: 0.8 });
 
-    map.once("moveend", () => {
+    const handleMoveEnd = () => {
       onDone?.();
-    });
-  }, [place, map]);
+    };
+
+    map.once("moveend", handleMoveEnd);
+
+    return () => {
+      map.off("moveend", handleMoveEnd);
+    };
+  }, [place?.id, place?.lat, place?.lng, map, onDone]);
 
   return null;
 }
@@ -82,30 +106,42 @@ export default function Map({
     ? places.find((p: any) => p.id === selectedPlaceId)
     : null;
 
+  useEffect(() => {
+    if (!selectedPlaceId) return;
+  
+    const timer = setTimeout(() => {
+      const marker = markerRefs.current[selectedPlaceId];
+  
+      if (marker) {
+        marker.openPopup();
+      }
+    }, 300);
+  
+    return () => clearTimeout(timer);
+  }, [selectedPlaceId]);
+
   return (
-    <MapContainer
-      center={[25.033, 121.5654]}
-      zoom={13}
-      style={{ height: "100%", width: "100%" }}
-      closePopupOnClick={true}
-    >
-      <TileLayer
-        attribution="&copy; OpenStreetMap"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div className="h-full w-full">
+      <MapContainer
+        center={
+          selectedPlace
+            ? [Number(selectedPlace.lat), Number(selectedPlace.lng)]
+            : [25.033, 121.5654]
+        }
+        zoom={13}
+        className="h-full w-full"
+        scrollWheelZoom
+      >
+        <ResizeFix />
 
-      {selectedPlace && (
-        <FlyToLocation
-          place={selectedPlace}
-          onDone={() => {
-            const marker = markerRefs.current[selectedPlaceId!];
-            marker?.openPopup();
-          }}
+        <FlyToLocation place={selectedPlace} />
+
+        <TileLayer
+          attribution="&copy; OpenStreetMap"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-      )}
 
-      {places.map((place) => {
-        return (
+        {places.map((place) => (
           <Marker
             key={place.id}
             position={[Number(place.lat), Number(place.lng)]}
@@ -121,96 +157,51 @@ export default function Map({
             }}
           >
             <Popup closeButton={false}>
-            <div>
-            {/* <div className="leaflet-popup-content-wrapper shadow-md border border-[#f0e0cc]"> */}
-              <h3 className="font-semibold text-[#4a2e00] text-sm leading-snug">
-                {place.name}
-              </h3>
-
-              <p className="text-xs text-[#8a6a4a] leading-snug">
-                📍 {place.address}
-              </p>
-
-              {place.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {place.tags.map((tag) => (
-                    <span
-                      key={tag.tagId}
-                      className="px-2 py-0.5 text-[10px] rounded-md bg-[#fff4e5] text-[#8a4b00]"
-                    >
-                      {tag.tag.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {place.facilities?.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {place.facilities.map((f) => (
-                    <span
-                      key={f.facilityId}
-                      className="px-2 py-0.5 text-[10px] rounded-md bg-[#f7e6d2] text-[#6b3a00]"
-                    >
-                      {f.facility.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <p className="text-[10px] text-[#b8a08c] pt-1 border-t">
-                {place.createdBy?.name.trim() ? "by " + place.createdBy?.name.trim() : "官方推薦"}
-              </p>
-            </div>
-              {/* <div className="w-[200px] space-y-1">
-                <h3 className="font-semibold text-sm">
+              <div className="w-[200px] space-y-1">
+                <h3 className="font-semibold text-sm text-[#4a2e00]">
                   {place.name}
                 </h3>
 
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {place.tags?.map((tag) => (
-                    <span
-                      key={tag.tag.id}
-                      className="px-2 py-0.5 text-xs rounded-md border border-[#e5c9a8] bg-[#fff4e5] text-[#8a4b00]"
-                    >
-                      {tag.tag.name}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {place.facilities?.map((f) => (
-                    <span
-                      key={f.facility.id}
-                      className="px-2 py-0.5 text-xs rounded-md border border-[#d6b08c] bg-[#f7e6d2] text-[#6b3a00]"
-                    >
-                      {f.facility.name}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="text-xs text-gray-500">
-                  ⭐ {place.avgRating ?? "尚無評分"}
-                </p>
-
-                <p className="text-xs line-clamp-2 text-gray-600">
-                  {place.description || "暫無描述"}
-                </p>
-
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`}
-                  target="_blank"
-                  className="text-xs text-blue-500 hover:underline"
-                >
-                  在 Google Maps 查看 →
-                </a>
                 <p className="text-xs text-[#8a6a4a]">
-                  {place.createdBy?.name.trim() ? "by " + place.createdBy?.name.trim() : "官方推薦"}
+                  📍 {place.address}
                 </p>
-              </div> */}
+
+                {place.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {place.tags.map((tag) => (
+                      <span
+                        key={tag.tagId}
+                        className="px-2 py-0.5 text-[10px] rounded-md bg-[#fff4e5] text-[#8a4b00]"
+                      >
+                        {tag.tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {place.facilities?.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {place.facilities.map((f) => (
+                      <span
+                        key={f.facilityId}
+                        className="px-2 py-0.5 text-[10px] rounded-md bg-[#f7e6d2] text-[#6b3a00]"
+                      >
+                        {f.facility.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-[10px] text-[#b8a08c] pt-1 border-t">
+                  {place.createdBy?.name?.trim()
+                    ? "by " + place.createdBy.name.trim()
+                    : "官方推薦"}
+                </p>
+              </div>
             </Popup>
           </Marker>
-        );
-      })}
-    </MapContainer>
+        ))}
+      </MapContainer>
+    </div>
   );
 }

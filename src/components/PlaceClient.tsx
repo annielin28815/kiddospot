@@ -57,57 +57,44 @@ export default function PlacesClient({ places }) {
 
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center justify-between border-b border-brand-line bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/5">
         <LoginButton />
-
-        <div className="flex items-center gap-2">
-          {isLoggedIn && (
-            <button
-              className="px-3 py-1 rounded-full bg-[#b06000] text-white text-sm"
-              onClick={() => setShowCreateModal(true)}
-            >
-              ＋新增
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="flex-1 relative overflow-hidden">
-        {viewMode === "list" ? (
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              viewMode === "list" ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+  
+        {isLoggedIn && (
+          <button
+            className="rounded-full bg-brand-peach px-4 py-2 text-sm font-medium text-brand-ink shadow-soft transition hover:scale-[1.02]"
+            onClick={() => setShowCreateModal(true)}
           >
-            <div className="h-full overflow-y-auto pb-20">
-              <PlaceList
-                places={filteredPlaces.slice(0, visibleCount)}
-                selectedPlaceId={selectedPlaceId}
-                hoveredPlaceId={hoveredPlaceId}
-                onSelect={setSelectedPlaceId}
-                onHover={setHoveredPlaceId}
-              />
+            ＋新增
+          </button>
+        )}
+      </div>
+  
+      <div className="relative flex-1 min-h-0 overflow-hidden bg-brand-cream dark:bg-[#1F1A17]">
+        {viewMode === "list" ? (
+          <div className="h-full overflow-y-auto pb-24 animate-fade-in">
+            <PlaceList
+              places={filteredPlaces.slice(0, visibleCount)}
+              selectedPlaceId={selectedPlaceId}
+              hoveredPlaceId={hoveredPlaceId}
+              onSelect={setSelectedPlaceId}
+              onHover={setHoveredPlaceId}
+            />
 
-              {/* 顯示更多 */}
-              {filteredPlaces.length > visibleCount && (
-                <div className="p-4 text-center">
-                  <button
-                    onClick={() => setVisibleCount((prev) => prev + 20)}
-                    className="text-sm text-[#8a4b00]"
-                  >
-                    顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
-                  </button>
-                </div>
-              )}
-            </div>
+            {filteredPlaces.length > visibleCount && (
+              <div className="p-4 text-center">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 20)}
+                  className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
+                >
+                  顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
+                </button>
+              </div>
+            )}
           </div>
         ) : (
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              viewMode === "map" ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-          >
+          <div className="h-full w-full animate-fade-in">
             <Map
               userId={userId}
               places={filteredPlaces.slice(0, visibleCount)}
@@ -119,58 +106,65 @@ export default function PlacesClient({ places }) {
           </div>
         )}
       </div>
-      {/* <div className="flex flex-1 overflow-hidden">
-        <div className="w-[320px] border-r overflow-y-auto">
-          <PlaceList
-            places={filteredPlaces}
-            selectedPlaceId={selectedPlaceId}
-            hoveredPlaceId={hoveredPlaceId}
-            onSelect={setSelectedPlaceId}
-            onHover={setHoveredPlaceId}
-          />
-        </div>
 
-        <div className="flex-1">
-          <Map
-            userId={userId}
-            places={filteredPlaces}
-            setPlaces={setClientPlaces}
-            selectedPlaceId={selectedPlaceId}
-            hoveredPlaceId={hoveredPlaceId}
-            onSelect={setSelectedPlaceId}
+      {/* <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+        <div className="relative flex items-center rounded-full border border-brand-line bg-white/85 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/85">
+          <div
+            className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-brand-lavender transition-all duration-300 ${
+              viewMode === "list" ? "left-1" : "left-[calc(50%-4px)]"
+            }`}
           />
+  
+          <button
+            onClick={() => setViewMode("list")}
+            className={`relative z-10 rounded-full px-6 py-2 text-sm transition ${
+              viewMode === "list"
+                ? "text-brand-ink"
+                : "text-brand-softInk dark:text-white/70"
+            }`}
+          >
+            清單
+          </button>
+  
+          <button
+            onClick={() => setViewMode("map")}
+            className={`relative z-10 rounded-full px-6 py-2 text-sm transition ${
+              viewMode === "map"
+                ? "text-brand-ink"
+                : "text-brand-softInk dark:text-white/70"
+            }`}
+          >
+            地圖
+          </button>
         </div>
       </div> */}
-
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999]">
-        <div className="relative flex items-center bg-white/80 backdrop-blur-md border border-[#e5c9a8] shadow-md rounded-full p-1">
-
-          {/* 滑動背景 */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[1200] flex justify-center">
+        <div className="pointer-events-auto relative flex items-center rounded-full border border-brand-line bg-white/90 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/90">
           <div
-            className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-[#b06000] transition-all duration-300 ${
+            className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-brand-lavender transition-all duration-300 ${
               viewMode === "list" ? "left-1" : "left-[calc(50%-4px)]"
             }`}
           />
 
-          {/* 清單 */}
           <button
+            type="button"
             onClick={() => setViewMode("list")}
-            className={`relative z-10 px-6 py-2 text-sm rounded-full transition ${
+            className={`relative z-10 rounded-full px-6 py-2 text-sm font-medium transition ${
               viewMode === "list"
-                ? "text-white"
-                : "text-[#8a4b00]"
+                ? "text-brand-ink"
+                : "text-brand-softInk dark:text-white/70"
             }`}
           >
             清單
           </button>
 
-          {/* 地圖 */}
           <button
+            type="button"
             onClick={() => setViewMode("map")}
-            className={`relative z-10 px-6 py-2 text-sm rounded-full transition ${
+            className={`relative z-10 rounded-full px-6 py-2 text-sm font-medium transition ${
               viewMode === "map"
-                ? "text-white"
-                : "text-[#8a4b00]"
+                ? "text-brand-ink"
+                : "text-brand-softInk dark:text-white/70"
             }`}
           >
             地圖
@@ -178,21 +172,18 @@ export default function PlacesClient({ places }) {
         </div>
       </div>
 
-      {showCreateModal && 
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4">
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-lg max-h-[90vh] flex flex-col">
-            
-            {/* 關閉 */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
+          <div className="relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-brand-cream shadow-soft dark:bg-[#2A2421]">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-black text-xl"
+              className="absolute right-4 top-4 z-10 text-xl text-brand-softInk hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
             >
               ✕
             </button>
-
-            {/* 內容可滾動 */}
-            <div className="overflow-y-auto m-4">
+  
+            <div className="m-4 overflow-y-auto">
               <AddPlaceForm
                 onCreated={(place) => {
                   handleCreated(place);
@@ -202,30 +193,7 @@ export default function PlacesClient({ places }) {
             </div>
           </div>
         </div>
-      }
-
-      {/* {showCreateModal && (
-        <ModalPortal>
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
-            <div className="relative bg-white rounded w-[400px] rounded-2xl shadow-md">
-              <button
-                type="button"
-                onClick={()=>setShowCreateModal(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
-
-              <AddPlaceForm
-                onCreated={(place) => {
-                  handleCreated(place);
-                  setShowCreateModal(false);
-                }}
-              />
-            </div>
-          </div>
-        </ModalPortal>
-      )} */}
+      )}
     </div>
   );
 }
