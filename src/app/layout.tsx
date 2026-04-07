@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="zh-Hant" className="h-full">
       <body
-        className="h-full bg-brand-cream text-brand-ink dark:bg-[#1F1A17] dark:text-white antialiased"
+        className="h-full text-brand-ink dark:bg-[#1F1A17] dark:text-white antialiased"
       >
         <Toaster position="top-center" />
         <Providers>{children}</Providers>

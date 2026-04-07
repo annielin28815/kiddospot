@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
+import { LogOut, LogIn } from "lucide-react";
 
 export default function LoginButton() {
   const { data: session } = useSession();
@@ -8,14 +9,14 @@ export default function LoginButton() {
   if (session) {
     return (
       <button onClick={() => signOut()}>
-        Sign out
+        <LogOut />
       </button>
     );
   }
 
   return (
     <button onClick={() => signIn("google")}>
-      Sign in with Google
+      <LogIn />
     </button>
   );
 }

@@ -4,10 +4,9 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import PlaceList from "../components/PlaceList";
-import LoginButton from "../components/LoginButton"
 import AddPlaceForm from "../components/AddPlaceForm";
-import ModalPortal from "./ModalPortal";
 import { Place } from "../types/place";
+import { MapPinPlus, List, MapPinned } from "lucide-react";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
@@ -59,19 +58,19 @@ export default function PlacesClient({ places }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-between border-b border-brand-line bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/5">
-        <LoginButton />
+        
   
         {isLoggedIn && (
           <button
-            className="rounded-full bg-brand-peach px-4 py-2 text-sm font-medium text-brand-ink shadow-soft transition hover:scale-[1.02]"
+            className="flex justify-between items-center gap-2 rounded-full bg-brand-peach px-4 py-2 text-sm font-medium text-brand-ink shadow-soft transition hover:scale-[1.02]"
             onClick={() => setShowCreateModal(true)}
           >
-            ＋新增
+            <MapPinPlus size={20} /> <span>新增</span>
           </button>
         )}
       </div>
   
-      <div className="relative flex-1 min-h-0 overflow-hidden bg-brand-cream dark:bg-[#1F1A17]">
+      <div className="relative flex-1 min-h-0 overflow-hidden dark:bg-[#1F1A17]">
         {viewMode === "list" ? (
           <div className="h-full overflow-y-auto pb-24 animate-fade-in">
             <PlaceList
@@ -107,37 +106,6 @@ export default function PlacesClient({ places }) {
         )}
       </div>
 
-      {/* <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-        <div className="relative flex items-center rounded-full border border-brand-line bg-white/85 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/85">
-          <div
-            className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-brand-lavender transition-all duration-300 ${
-              viewMode === "list" ? "left-1" : "left-[calc(50%-4px)]"
-            }`}
-          />
-  
-          <button
-            onClick={() => setViewMode("list")}
-            className={`relative z-10 rounded-full px-6 py-2 text-sm transition ${
-              viewMode === "list"
-                ? "text-brand-ink"
-                : "text-brand-softInk dark:text-white/70"
-            }`}
-          >
-            清單
-          </button>
-  
-          <button
-            onClick={() => setViewMode("map")}
-            className={`relative z-10 rounded-full px-6 py-2 text-sm transition ${
-              viewMode === "map"
-                ? "text-brand-ink"
-                : "text-brand-softInk dark:text-white/70"
-            }`}
-          >
-            地圖
-          </button>
-        </div>
-      </div> */}
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[1200] flex justify-center">
         <div className="pointer-events-auto relative flex items-center rounded-full border border-brand-line bg-white/90 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/90">
           <div
@@ -149,25 +117,25 @@ export default function PlacesClient({ places }) {
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`relative z-10 rounded-full px-6 py-2 text-sm font-medium transition ${
+            className={`relative z-10 rounded-full flex justify-between items-center gap-2 px-6 py-2 text-sm font-medium transition ${
               viewMode === "list"
                 ? "text-brand-ink"
                 : "text-brand-softInk dark:text-white/70"
             }`}
           >
-            清單
+            <List size={20} /><span>清單</span>
           </button>
 
           <button
             type="button"
             onClick={() => setViewMode("map")}
-            className={`relative z-10 rounded-full px-6 py-2 text-sm font-medium transition ${
+            className={`relative z-10 rounded-full flex justify-between items-center gap-2 px-6 py-2 text-sm font-medium transition ${
               viewMode === "map"
                 ? "text-brand-ink"
                 : "text-brand-softInk dark:text-white/70"
             }`}
           >
-            地圖
+            <MapPinned size={20} /><span>地圖</span>
           </button>
         </div>
       </div>
