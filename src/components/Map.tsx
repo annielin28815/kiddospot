@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { Place } from "@/src/types/place";
 import {
   MapContainer,
   TileLayer,
@@ -75,14 +76,6 @@ function FlyToLocation({ place, onDone }: any) {
 
 type Favorite = {
   userId: string;
-};
-
-type Place = {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  favorites?: Favorite[];
 };
 
 export default function Map({
@@ -166,9 +159,9 @@ export default function Map({
                   📍 {place.address}
                 </p>
 
-                {place.tags?.length > 0 && (
+                {(place.tags ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {place.tags.map((tag) => (
+                    {(place.tags ?? []).map((tag) => (
                       <span
                         key={tag.tagId}
                         className="px-2 py-0.5 text-[10px] rounded-md bg-[#fff4e5] text-[#8a4b00]"
@@ -179,9 +172,9 @@ export default function Map({
                   </div>
                 )}
 
-                {place.facilities?.length > 0 && (
+                {(place.facilities ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {place.facilities.map((f) => (
+                    {(place.facilities ?? []).map((f) => (
                       <span
                         key={f.facilityId}
                         className="px-2 py-0.5 text-[10px] rounded-md bg-[#f7e6d2] text-[#6b3a00]"

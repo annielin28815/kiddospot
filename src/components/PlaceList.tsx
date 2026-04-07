@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { MapPin, Star, Ellipsis } from "lucide-react";
+import { Place } from "@/src/types/place";
 
 const cardThemes = [
   {
@@ -45,7 +46,7 @@ export default function PlaceList({
   onHover,
   hoveredPlaceId
 }: {
-  places: any[];
+  places: Place[];
   selectedPlaceId: string | null;
   hoveredPlaceId: string | null;
   onSelect: (id: string | null) => void;
@@ -64,7 +65,7 @@ export default function PlaceList({
           return (
             <div
               key={place.id}
-              ref={(el) => (itemRefs.current[place.id] = el)}
+              ref={(el) => {itemRefs.current[place.id] = el;}}
               onClick={() => onSelect(place.id)}
               onMouseEnter={() => onHover(place.id)}
               onMouseLeave={() => onHover(null)}
@@ -104,7 +105,6 @@ export default function PlaceList({
                     <span className="line-clamp-2">{place.address}</span>
                   </p>
 
-                  {/* tags */}
                   {place.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {place.tags.slice(0, 3).map((tag) => (
@@ -123,7 +123,6 @@ export default function PlaceList({
                     </div>
                   )}
 
-                  {/* facilities */}
                   {place.facilities?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {place.facilities.slice(0, 3).map((f) => (

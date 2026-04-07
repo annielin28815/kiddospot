@@ -3,16 +3,20 @@
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
+import { Place } from "@/src/types/place";
 import PlaceList from "../components/PlaceList";
 import AddPlaceForm from "../components/AddPlaceForm";
-import { Place } from "../types/place";
 import { MapPinPlus, List, MapPinned } from "lucide-react";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
 });
 
-export default function PlacesClient({ places }) {
+type PlacesClientProps = {
+  places: Place[];
+};
+
+export default function PlacesClient({ places }:PlacesClientProps) {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [visibleCount, setVisibleCount] = useState(20);
   const [clientPlaces, setClientPlaces] = useState<Place[]>([]);
@@ -154,6 +158,7 @@ export default function PlacesClient({ places }) {
             <div className="m-4 overflow-y-auto">
               <AddPlaceForm
                 onCreated={(place) => {
+                  if (!place) return;
                   handleCreated(place);
                   setShowCreateModal(false);
                 }}
