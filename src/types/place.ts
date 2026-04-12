@@ -3,6 +3,18 @@ import { Facility } from "./facility";
 import { User } from "./user";
 import { Favorite } from "./favorite";
 
+export type PlaceTag = {
+  tagId: string;
+  placeId: string;
+  tag: Tag;
+};
+
+export type PlaceFacility = {
+  facilityId: string;
+  placeId: string;
+  facility: Facility;
+};
+
 export type Place = {
   id: string;
   name: string;
@@ -20,15 +32,7 @@ export type Place = {
   createdById?: string | null;
   createdBy?: User | null;
 
-  tags: {
-    tagId: string;
-    tag: Tag;
-  }[];
-
-  facilities: {
-    facilityId: string;
-    facility: Facility;
-  }[];
-
+  tags: PlaceTag[];
+  facilities: PlaceFacility[];
   favorites?: Favorite[];
 };

@@ -8,14 +8,14 @@ export default function LoginButton() {
 
   if (session) {
     return (
-      <button onClick={() => signOut()}>
+      <button title="登出" className="cursor-pointer" onClick={() => signOut()}>
         <LogOut />
       </button>
     );
   }
 
   return (
-    <button onClick={() => signIn("google")}>
+    <button title="登入" className="cursor-pointer" onClick={() => signIn("google")}>
       <LogIn />
     </button>
   );
