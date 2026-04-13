@@ -170,18 +170,6 @@ export default function PlaceList({
                 )}
               </div>
             </div>
-
-            {/* 右下角 more 預留 */}
-            {/* <div className="absolute bottom-3 right-3 z-10">
-              <button
-                type="button"
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#6B5B52] backdrop-blur-sm transition hover:bg-white/80"
-                aria-label="View details"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div> */}
           </div>
         );
       })}

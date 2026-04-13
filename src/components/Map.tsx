@@ -103,7 +103,7 @@ export default function Map({
   }, [selectedPlaceId]);
 
   return (
-    <div className="h-full w-full">
+    <div className="relative z-0 h-full w-full">
       <MapContainer
         center={
           selectedPlace

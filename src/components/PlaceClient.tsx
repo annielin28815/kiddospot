@@ -1,11 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import { Heart, List, MapPinPlus, MapPinned } from "lucide-react";
+import { createPortal } from "react-dom";
 
 import type { Place } from "@/src/types/place";
 import PlaceList from "./PlaceList";
@@ -36,6 +38,11 @@ type PlacesClientProps = {
   initialPlaces: Place[];
   tags: FilterOption[];
   facilities: FilterOption[];
+  showCreateModal: boolean;
+  onCloseCreateModal: () => void;
+  isUserMenuOpen: boolean;
+  isFilterOpen: boolean;
+  onFilterOpenChange: (open: boolean) => void;
 };
 
 const fetcher = async (url: string): Promise<PlacesApiResponse> => {
@@ -52,6 +59,11 @@ export default function PlacesClient({
   initialPlaces,
   tags,
   facilities,
+  showCreateModal,
+  onCloseCreateModal,
+  isUserMenuOpen,
+  isFilterOpen,
+  onFilterOpenChange,
 }: PlacesClientProps) {
   const { data: session, status } = useSession();
 
@@ -62,15 +74,15 @@ export default function PlacesClient({
   const [visibleCount, setVisibleCount] = useState(20);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [isFavoriteSubmitting, setIsFavoriteSubmitting] = useState(false);
-
+  const shouldHideFloatingToggle = isUserMenuOpen || isFilterOpen || showCreateModal;
+  
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
+  
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const showFavoritesOnly = searchParams.get("favorite") === "true";
 
   const keyword = searchParams.get("keyword") || "";
   const tagIds = searchParams.getAll("tags");
@@ -95,9 +107,15 @@ export default function PlacesClient({
 
   const places = data?.places ?? initialPlaces;
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     setVisibleCount(20);
-  }, [queryString, showFavoritesOnly]);
+  }, [queryString]);
 
   useEffect(() => {
     if (!selectedPlaceId) return;
@@ -244,7 +262,7 @@ export default function PlacesClient({
     );
 
     setSelectedPlaceId(newPlace.id);
-    setShowCreateModal(false);
+    onCloseCreateModal();
     setViewMode("list");
   }
 
@@ -279,91 +297,124 @@ export default function PlacesClient({
         value={filters}
         onApply={handleApply}
         onClear={handleClear}
+        onOpenChange={onFilterOpenChange}
       />
 
-      <div className="flex items-center justify-between border-b border-brand-line bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/5">
-        <div className="flex items-center gap-2">
-          {isLoggedIn && (
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-full bg-brand-peach px-4 py-2 text-sm font-medium text-brand-ink shadow-soft transition hover:scale-[1.02] cursor-pointer"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <MapPinPlus size={20} />
-              <span>新增</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowFavoritesOnly((prev) => !prev)}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-soft transition cursor-pointer ${
-              showFavoritesOnly
-                ? "border-brand-lavender bg-brand-lavender text-brand-ink"
-                : "border-brand-line bg-white text-brand-softInk hover:bg-brand-cream"
-            }`}
-          >
-            <Heart
-              size={18}
-              className={showFavoritesOnly ? "fill-current" : ""}
-            />
-            <span>只看收藏</span>
-          </button>
-        </div>
-
+      <div className="flex items-center justify-end border-b border-brand-line bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/5">
         <div className="text-xs text-brand-softInk dark:text-white/60">
           {isLoading ? "搜尋中..." : `共 ${filteredPlaces.length} 筆`}
         </div>
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden dark:bg-[#1F1A17]">
-        {viewMode === "list" ? (
-          <div className="h-full overflow-y-auto pb-24 animate-fade-in">
-            {!isLoading && filteredPlaces.length === 0 ? 
-              <div className="h-full flex items-center justify-center text-center text-sm text-brand-softInk dark:text-white/70">
-                找不到符合條件的地點，試試看放寬搜尋條件吧 👀
+        {(() => {
+          const handleClearFavorite = () => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("favorite");
+            const nextQuery = params.toString();
+            router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+              scroll: false,
+            });
+          };
+
+          const EmptyState = ({ overlay = false }: { overlay?: boolean }) => (
+            <div
+              className={
+                overlay
+                  ? "pointer-events-none absolute inset-0 z-[700] flex items-center justify-center p-6"
+                  : "flex h-full items-center justify-center p-6 text-center"
+              }
+            >
+              <div
+                className={
+                  overlay
+                    ? "pointer-events-auto max-w-xs rounded-3xl border border-brand-line bg-white/92 px-5 py-4 text-center shadow-soft backdrop-blur dark:border-white/10 dark:bg-[#2A2421]/92"
+                    : "max-w-xs text-center"
+                }
+              >
+                <p className="text-sm font-medium text-brand-ink dark:text-white">
+                  {showFavoritesOnly
+                    ? "你還沒有收藏任何地點 🤍"
+                    : "目前沒有符合條件的地點 👀"}
+                </p>
+
+                <p className="mt-2 text-xs leading-6 text-brand-softInk dark:text-white/70">
+                  {showFavoritesOnly
+                    ? "先去逛逛地點，看到喜歡的再按愛心收藏吧。"
+                    : "可以試試放寬搜尋條件，或切回清單模式看看。"}
+                </p>
+
+                {showFavoritesOnly && (
+                  <button
+                    type="button"
+                    onClick={handleClearFavorite}
+                    className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-brand-peach px-4 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
+                  >
+                    去看看全部地點
+                  </button>
+                )}
               </div>
-              :
-              <PlaceList
+            </div>
+          );
+
+          const isEmpty = !isLoading && filteredPlaces.length === 0;
+
+          return viewMode === "list" ? (
+            <div className="h-full overflow-y-auto pb-24 animate-fade-in">
+              {isEmpty ? (
+                <EmptyState />
+              ) : (
+                <>
+                  <PlaceList
+                    places={displayPlaces}
+                    selectedPlaceId={selectedPlaceId}
+                    hoveredPlaceId={hoveredPlaceId}
+                    onSelect={setSelectedPlaceId}
+                    onHover={setHoveredPlaceId}
+                    itemRefs={itemRefs}
+                    userId={userId}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+
+                  {filteredPlaces.length > visibleCount && (
+                    <div className="p-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount((prev) => prev + 20)}
+                        className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
+                      >
+                        顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="relative h-full w-full animate-fade-in">
+              <Map
+                userId={userId}
                 places={displayPlaces}
                 selectedPlaceId={selectedPlaceId}
                 hoveredPlaceId={hoveredPlaceId}
                 onSelect={setSelectedPlaceId}
-                onHover={setHoveredPlaceId}
-                itemRefs={itemRefs}
-                userId={userId}
                 onToggleFavorite={handleToggleFavorite}
               />
-            }
 
-            {filteredPlaces.length > visibleCount && (
-              <div className="p-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => setVisibleCount((prev) => prev + 20)}
-                  className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
-                >
-                  顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="h-full w-full animate-fade-in">
-            <Map
-              userId={userId}
-              places={displayPlaces}
-              selectedPlaceId={selectedPlaceId}
-              hoveredPlaceId={hoveredPlaceId}
-              onSelect={setSelectedPlaceId}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          </div>
-        )}
+              {isEmpty && <EmptyState overlay />}
+            </div>
+          );
+        })()}
       </div>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[1200] flex justify-center">
-        <div className="pointer-events-auto relative flex items-center rounded-full border border-brand-line bg-white/90 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/90">
+      <div className={`pointer-events-none fixed inset-x-0 bottom-6 z-[800] flex justify-center transition-all duration-200 ${
+        shouldHideFloatingToggle
+          ? "translate-y-4 opacity-0"
+          : "translate-y-0 opacity-100"
+      }`}>
+        <div className={`pointer-events-auto relative flex items-center rounded-full border border-brand-line bg-white/90 p-1 shadow-soft backdrop-blur-md dark:border-white/10 dark:bg-[#2A2421]/90 ${
+          shouldHideFloatingToggle ? "pointer-events-none" : ""
+        }`}>
           <div
             className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-brand-lavender transition-all duration-300 ${
               viewMode === "list" ? "left-1" : "left-[calc(50%-4px)]"
@@ -398,23 +449,52 @@ export default function PlacesClient({
         </div>
       </div>
 
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
-          <div className="relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-brand-cream shadow-soft dark:bg-[#2A2421]">
+      {mounted &&
+        showCreateModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[1300]">
             <button
               type="button"
-              onClick={() => setShowCreateModal(false)}
-              className="absolute right-4 top-4 z-10 text-xl text-brand-softInk hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
-            >
-              ✕
-            </button>
+              className="absolute inset-0 bg-black/30"
+              onClick={onCloseCreateModal}
+            />
 
-            <div className="m-4 overflow-y-auto">
-              <AddPlaceForm onCreated={handleCreated} />
+            <div className="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center md:p-6">
+              <div className="relative max-h-[88vh] w-full overflow-hidden rounded-t-[2rem] bg-white shadow-2xl md:max-h-[85vh] md:max-w-2xl md:rounded-[2rem] dark:bg-[#2A2421]">
+                <div className="flex justify-center pt-3 md:hidden">
+                  <div className="h-1.5 w-14 rounded-full bg-neutral-200" />
+                </div>
+
+                <div className="flex items-center justify-between px-5 pt-4 pb-3 md:px-6 md:pt-5">
+                  <div>
+                    <h2 className="text-xl font-bold text-brand-ink md:text-2xl dark:text-white">
+                      新增地點
+                    </h2>
+                    <p className="mt-1 text-sm text-brand-softInk dark:text-white/70">
+                      分享一個適合親子的好地方 ✨
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onCloseCreateModal}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-line bg-white text-brand-softInk transition hover:bg-brand-sand dark:border-white/10 dark:bg-[#2A2421]"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="max-h-[calc(88vh-140px)] overflow-y-auto px-5 pb-5 md:max-h-[calc(85vh-150px)] md:px-6 md:pb-6">
+                  <AddPlaceForm 
+                    onCreated={handleCreated}
+                    onCancel={onCloseCreateModal} 
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

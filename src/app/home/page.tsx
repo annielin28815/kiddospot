@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Place } from "@/src/types/place";
 import BrandLogo from "@/src/components/BrandLogo";
 import PlacesClient from "@/src/components/PlaceClient";
@@ -26,6 +27,33 @@ export default function Home() {
   const [tags, setTags] = useState<FilterOption[]>([]);
   const [facilities, setFacilities] = useState<FilterOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleOpenFavorites = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("favorite", "true");
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseFavorites = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("favorite");
+    const nextQuery = params.toString();
+    router.push(nextQuery ? `?${nextQuery}` : "/", { scroll: false });
+  };
+
+  const handleOpenCreate = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreate = () => {
+    setShowCreateModal(false);
+  };
 
   useEffect(() => {
     async function fetchInitialData() {
@@ -56,8 +84,8 @@ export default function Home() {
 
   return (
     <main className="h-dvh text-brand-ink dark:bg-[#1F1A17] dark:text-white">
-      <section className="mx-auto flex h-full w-full max-w-[720px] flex-col border-x-0 md:border-x md:border-brand-line bg-white/65">
-        <header className="sticky top-0 z-10 shrink-0 flex justify-between border-b border-brand-line bg-brand-cream px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#1F1A17]/90">
+      <section className="mx-auto flex h-full w-full max-w-[720px] flex-col border-x-0 bg-white/65 md:border-x md:border-brand-line">
+        <header className="sticky top-0 z-[1000] flex shrink-0 justify-between border-b border-brand-line bg-brand-cream px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#1F1A17]/90">
           <div className="flex items-center gap-3">
             <BrandLogo size={42} showText={false} />
             <div>
@@ -67,19 +95,29 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <LoginButton />
+
+          <LoginButton
+            onOpenFavorites={handleOpenFavorites}
+            onOpenCreate={handleOpenCreate}
+            onMenuOpenChange={setIsUserMenuOpen}
+          />
         </header>
 
-        <div className="flex-1 min-h-0">
-        {!isLoading && (
+        <div className="min-h-0 flex-1">
+          {!isLoading && (
             <PlacesClient
               initialPlaces={places}
               tags={tags}
               facilities={facilities}
+              showCreateModal={showCreateModal}
+              onCloseCreateModal={handleCloseCreate}
+              isUserMenuOpen={isUserMenuOpen}
+              isFilterOpen={isFilterOpen}
+              onFilterOpenChange={setIsFilterOpen}
             />
           )}
         </div>
       </section>
     </main>
-  )
+  );
 }

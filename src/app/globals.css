@@ -39,6 +39,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.leaflet-container {
+  z-index: 0;
+}
+
 .leaflet-marker-icon.hovered {
   transform: translateY(-10px);
   transition: transform 0.2s ease;

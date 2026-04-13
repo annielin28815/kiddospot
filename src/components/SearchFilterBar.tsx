@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 type FilterOption = {
   id: string;
@@ -20,6 +21,7 @@ type SearchFilterBarProps = {
   value?: SearchFilterValue;
   onApply?: (value: SearchFilterValue) => void;
   onClear?: () => void;
+  onOpenChange?: (open: boolean) => void;
 };
 
 const defaultValue: SearchFilterValue = {
@@ -34,6 +36,7 @@ export default function SearchFilterBar({
   value = defaultValue,
   onApply,
   onClear,
+  onOpenChange,
 }: SearchFilterBarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,6 +45,11 @@ export default function SearchFilterBar({
   const [draftFacilityIds, setDraftFacilityIds] = useState<string[]>(
     value.facilityIds ?? []
   );
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setDraftKeyword(value.keyword ?? "");
@@ -68,6 +76,16 @@ export default function SearchFilterBar({
     return count;
   }, [value]);
 
+  function openSheet() {
+    setIsOpen(true);
+    onOpenChange?.(true);
+  }
+  
+  function closeSheet() {
+    setIsOpen(false);
+    onOpenChange?.(false);
+  }
+
   function toggleSelect(id: string, list: string[], setter: (v: string[]) => void) {
     if (list.includes(id)) {
       setter(list.filter((item) => item !== id));
@@ -84,7 +102,7 @@ export default function SearchFilterBar({
     };
 
     onApply?.(nextValue);
-    setIsOpen(false);
+    closeSheet();
   }
 
   function handleClearDraft() {
@@ -96,18 +114,18 @@ export default function SearchFilterBar({
   function handleClearAll() {
     handleClearDraft();
     onClear?.();
-    setIsOpen(false);
+    closeSheet();
   }
 
   return (
     <>
       {/* top search row */}
-      <div className="sticky top-0 z-20 bg-[var(--background,#fff)]/90 backdrop-blur supports-[backdrop-filter]:bg-[var(--background,#fff)]/75">
+      <div className="sticky top-0 z-[900] bg-[var(--background,#fff)]/90 backdrop-blur supports-[backdrop-filter]:bg-[var(--background,#fff)]/75">
         <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setIsOpen(true)}
+              onClick={openSheet}
               className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-[var(--color-line,#EADBC8)] bg-white px-4 text-left shadow-sm transition hover:shadow-md"
             >
               <Search className="h-4 w-4 shrink-0 text-[var(--color-softInk,#6B5B52)]" />
@@ -125,7 +143,7 @@ export default function SearchFilterBar({
 
             <button
               type="button"
-              onClick={() => setIsOpen(true)}
+              onClick={openSheet}
               className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-line,#EADBC8)] bg-[var(--color-sand,#F6EBDD)] text-[var(--color-ink,#3A2E2A)] shadow-sm transition hover:shadow-md cursor-pointer"
               aria-label="Open search filters"
             >
@@ -171,13 +189,15 @@ export default function SearchFilterBar({
       </div>
 
       {/* modal / bottom sheet */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50">
+      {mounted &&
+        isOpen &&
+        createPortal(
+        <div className="fixed inset-0 z-[1200]">
           <button
             type="button"
             aria-label="Close overlay"
             className="absolute inset-0 bg-black/30"
-            onClick={() => setIsOpen(false)}
+            onClick={closeSheet}
           />
 
           <div className="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center md:p-6">
@@ -200,7 +220,7 @@ export default function SearchFilterBar({
 
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeSheet}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line,#EADBC8)] bg-white text-[var(--color-softInk,#6B5B52)] transition hover:bg-[var(--color-sand,#F6EBDD)]"
                   aria-label="Close search filter"
                 >
@@ -330,7 +350,8 @@ export default function SearchFilterBar({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+      document.body
       )}
     </>
   );

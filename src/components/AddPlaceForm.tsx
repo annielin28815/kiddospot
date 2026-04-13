@@ -6,9 +6,13 @@ import { Place } from "@/src/types/place";
 
 type AddPlaceFormProps = {
   onCreated: (place: Place | null) => void;
+  onCancel: () => void;
 };
 
-export default function AddPlaceForm({ onCreated }: AddPlaceFormProps) {
+export default function AddPlaceForm({ 
+  onCreated, 
+  onCancel 
+}: AddPlaceFormProps) {
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -36,11 +40,11 @@ export default function AddPlaceForm({ onCreated }: AddPlaceFormProps) {
   }, []);
 
   const handleClose = () => {
-    toast("確定不新增嗎？", {
-      icon: "🤔",
-    });
+    // toast("確定不新增嗎？", {
+    //   icon: "🤔",
+    // });
   
-    onCreated?.(null);
+    onCancel();
   };
 
   const handleSubmit = async (e: any) => {
@@ -90,174 +94,160 @@ export default function AddPlaceForm({ onCreated }: AddPlaceFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <section>
+        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
+          名稱 <span className="text-brand-softInk">*</span>
+        </label>
+        <input
+          required
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+        />
+      </section>
 
-    {/* ❌ 右上角關閉
-    <button
-      type="button"
-      onClick={handleClose}
-      className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
-    >
-      ✕
-    </button> */}
+      <section>
+        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
+          地址 <span className="text-brand-softInk">*</span>
+        </label>
+        <input
+          required
+          value={form.address}
+          onChange={(e) => setForm({ ...form, address: e.target.value })}
+          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+        />
+      </section>
 
-    <h2 className="text-lg font-semibold text-gray-800">新增地點</h2>
+      <section className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
+            緯度 *
+          </label>
+          <input
+            type="number"
+            step="any"
+            required
+            value={form.lat}
+            onChange={(e) => setForm({ ...form, lat: e.target.value })}
+            className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+          />
+        </div>
 
-    {/* 名稱 */}
-    <div>
-      <label className="text-sm text-gray-600">
-        名稱 <span className="text-gray-400">*</span>
-      </label>
-      <input
-        required
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="w-full mt-1 px-4 py-2 rounded-xl border border-gray-300
-                  focus:outline-none focus:ring-2 focus:ring-[#b06000]"
-      />
-    </div>
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
+            經度 *
+          </label>
+          <input
+            type="number"
+            step="any"
+            required
+            value={form.lng}
+            onChange={(e) => setForm({ ...form, lng: e.target.value })}
+            className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+          />
+        </div>
+      </section>
 
-    {/* 地址 */}
-    <div>
-      <label className="text-sm text-gray-600">
-        地址 <span className="text-gray-400">*</span>
-      </label>
-      <input
-        required
-        value={form.address}
-        onChange={(e) => setForm({ ...form, address: e.target.value })}
-        className="w-full mt-1 px-4 py-2 rounded-xl border border-gray-300
-                  focus:outline-none focus:ring-2 focus:ring-[#b06000]"
-      />
-    </div>
+      <section>
+        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
+          描述
+        </label>
+        <textarea
+          value={form.description}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
+          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+        />
+      </section>
 
-    {/* 緯度 */}
-    <div>
-      <label className="text-sm text-gray-600">
-        緯度 <span className="text-gray-400">*</span>
-      </label>
-      <input
-        type="number"
-        step="any"
-        required
-        value={form.lat}
-        onChange={(e) => setForm({ ...form, lat: e.target.value })}
-        className="w-full mt-1 px-4 py-2 rounded-xl border border-gray-300
-                  focus:outline-none focus:ring-2 focus:ring-[#b06000]"
-      />
-    </div>
+      <section>
+        <h3 className="mb-3 text-sm font-semibold text-brand-ink dark:text-white">
+          分類
+        </h3>
 
-    {/* 經度 */}
-    <div>
-      <label className="text-sm text-gray-600">
-        經度 <span className="text-gray-400">*</span>
-      </label>
-      <input
-        type="number"
-        step="any"
-        required
-        value={form.lng}
-        onChange={(e) => setForm({ ...form, lng: e.target.value })}
-        className="w-full mt-1 px-4 py-2 rounded-xl border border-gray-300
-                  focus:outline-none focus:ring-2 focus:ring-[#b06000]"
-      />
-    </div>
+        <div className="flex flex-wrap gap-2.5">
+          {tags.map((tag) => {
+            const selected = selectedTags.includes(tag.id);
 
-    {/* 描述 */}
-    <div>
-      <label className="text-sm text-gray-600">描述</label>
-      <textarea
-        value={form.description}
-        onChange={(e) =>
-          setForm({ ...form, description: e.target.value })
-        }
-        className="w-full mt-1 px-4 py-2 rounded-xl border border-gray-300
-                  focus:outline-none focus:ring-2 focus:ring-[#b06000]"
-      />
-    </div>
+            return (
+              <button
+                key={tag.id}
+                type="button"
+                onClick={() =>
+                  setSelectedTags((prev) =>
+                    selected
+                      ? prev.filter((id) => id !== tag.id)
+                      : [...prev, tag.id]
+                  )
+                }
+                className={[
+                  "rounded-full border px-4 py-2 text-sm font-medium transition",
+                  selected
+                    ? "border-brand-peach bg-brand-peach/15"
+                    : "border-brand-line bg-white hover:bg-brand-cream",
+                ].join(" ")}
+              >
+                {tag.name}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
-    {/* Tags */}
-    <div>
-      <p className="text-sm text-gray-600 mb-2">分類</p>
-      <div className="flex gap-2 flex-wrap">
-        {tags.map((tag) => {
-          const active = selectedTags.includes(tag.id);
+      <section>
+        <h3 className="mb-3 text-sm font-semibold text-brand-ink dark:text-white">
+          設施
+        </h3>
 
-          return (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => {
-                setSelectedTags((prev) =>
-                  active
-                    ? prev.filter((id) => id !== tag.id)
-                    : [...prev, tag.id]
-                );
-              }}
-              className={`px-3 py-1 rounded-full text-sm border transition
-                ${
-                  active
-                    ? "bg-[#b06000] text-white border-[#b06000]"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-[#fff4e5]"
-                }`}
-            >
-              {tag.name}
-            </button>
-          );
-        })}
+        <div className="flex flex-wrap gap-2.5">
+          {facilities.map((f) => {
+            const selected = selectedFacilities.includes(f.id);
+
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() =>
+                  setSelectedFacilities((prev) =>
+                    selected
+                      ? prev.filter((id) => id !== f.id)
+                      : [...prev, f.id]
+                  )
+                }
+                className={[
+                  "rounded-full border px-4 py-2 text-sm font-medium transition",
+                  selected
+                    ? "border-brand-mint bg-brand-mint/15"
+                    : "border-brand-line bg-white hover:bg-brand-cream",
+                ].join(" ")}
+              >
+                {f.name}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="border-t border-brand-line pt-4">
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-brand-line bg-white text-sm font-semibold text-brand-softInk hover:bg-brand-sand"
+          >
+            取消
+          </button>
+
+          <button
+            type="submit"
+            className="inline-flex h-12 flex-[1.4] items-center justify-center rounded-full bg-brand-peach text-sm font-semibold text-white shadow-sm hover:opacity-95"
+          >
+            新增地點
+          </button>
+        </div>
       </div>
-    </div>
-
-    {/* Facilities */}
-    <div>
-      <p className="text-sm text-gray-600 mb-2">設施</p>
-      <div className="flex gap-2 flex-wrap">
-        {facilities.map((f) => {
-          const active = selectedFacilities.includes(f.id);
-
-          return (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => {
-                setSelectedFacilities((prev) =>
-                  active
-                    ? prev.filter((id) => id !== f.id)
-                    : [...prev, f.id]
-                );
-              }}
-              className={`px-3 py-1 rounded-full text-sm border transition
-                ${
-                  active
-                    ? "bg-[#b06000] text-white border-[#b06000]"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-[#fff4e5]"
-                }`}
-            >
-              {f.name}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    {/* 按鈕 */}
-    <div className="flex justify-end gap-2 pt-2">
-      <button
-        type="button"
-        onClick={handleClose}
-        className="px-4 py-2 rounded-xl border border-gray-300"
-      >
-        取消
-      </button>
-
-      <button
-        type="submit"
-        className="px-4 py-2 rounded-xl bg-[#b06000] text-white
-                  hover:opacity-90 transition"
-      >
-        新增
-      </button>
-    </div>
     </form>
   );
 }
