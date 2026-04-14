@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Place } from "@/src/types/place";
@@ -8,6 +9,11 @@ type AddPlaceFormProps = {
   onCreated: (place: Place) => void;
   onCancel: () => void;
 };
+
+const LocationPickerMap = dynamic(
+  () => import("@/src/components/LocationPickerMap"),
+  { ssr: false }
+);
 
 export default function AddPlaceForm({ 
   onCreated, 
@@ -26,6 +32,16 @@ export default function AddPlaceForm({
 
   const [tags, setTags] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
+  const latValue = form.lat !== "" && !Number.isNaN(Number(form.lat)) ? Number(form.lat) : null;
+  const lngValue = form.lng !== "" && !Number.isNaN(Number(form.lng)) ? Number(form.lng) : null;
+
+  function handlePickLocation(coords: { lat: number; lng: number }) {
+    setForm((prev) => ({
+      ...prev,
+      lat: coords.lat.toFixed(6),
+      lng: coords.lng.toFixed(6),
+    }));
+  }
 
   useEffect(() => {
     const fetchMeta = async () => {
@@ -116,6 +132,25 @@ export default function AddPlaceForm({
           value={form.address}
           onChange={(e) => setForm({ ...form, address: e.target.value })}
           className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+        />
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-brand-ink dark:text-white">
+              地圖選點
+            </h3>
+            <p className="mt-1 text-xs text-brand-softInk dark:text-white/70">
+              可以直接點一下地圖，自動帶入經緯度
+            </p>
+          </div>
+        </div>
+
+        <LocationPickerMap
+          lat={latValue}
+          lng={lngValue}
+          onPick={handlePickLocation}
         />
       </section>
 

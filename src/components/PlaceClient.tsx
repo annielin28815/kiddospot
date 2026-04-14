@@ -260,7 +260,7 @@ export default function PlacesClient({
       },
       { revalidate: false }
     );
-
+  
     setSelectedPlaceId(newPlace.id);
     onCloseCreateModal();
     setViewMode("list");
