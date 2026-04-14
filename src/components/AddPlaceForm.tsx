@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { Place } from "@/src/types/place";
 
 type AddPlaceFormProps = {
-  onCreated: (place: Place | null) => void;
+  onCreated: (place: Place) => void;
   onCancel: () => void;
 };
 
