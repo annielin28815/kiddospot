@@ -4,10 +4,16 @@ import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Place } from "@/src/types/place";
+import { ui } from "@/src/lib/ui";
 
 type AddPlaceFormProps = {
   onCreated: (place: Place) => void;
   onCancel: () => void;
+};
+
+type MetaOption = {
+  id: string;
+  name: string;
 };
 
 const LocationPickerMap = dynamic(
@@ -15,9 +21,21 @@ const LocationPickerMap = dynamic(
   { ssr: false }
 );
 
-export default function AddPlaceForm({ 
-  onCreated, 
-  onCancel 
+const selectablePillBase =
+  "rounded-full border px-4 py-2 text-sm font-medium transition";
+
+const selectablePillNeutral =
+  "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] dark:bg-white/10 dark:text-[var(--color-text-secondary)] dark:hover:bg-white/15";
+
+const selectablePillPeachActive =
+  "border-[#F4A261] bg-[#F4A261]/15 text-[#8A4B00] dark:border-[#F4A261]/50 dark:bg-[#F4A261]/16 dark:text-[#F4A261]";
+
+const selectablePillMintActive =
+  "border-[#8CBF9F] bg-[#8CBF9F]/15 text-[#456A54] dark:border-[#8CBF9F]/50 dark:bg-[#8CBF9F]/16 dark:text-[#8CBF9F]";
+
+export default function AddPlaceForm({
+  onCreated,
+  onCancel,
 }: AddPlaceFormProps) {
   const [form, setForm] = useState({
     name: "",
@@ -30,10 +48,13 @@ export default function AddPlaceForm({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
 
-  const [tags, setTags] = useState<any[]>([]);
-  const [facilities, setFacilities] = useState<any[]>([]);
-  const latValue = form.lat !== "" && !Number.isNaN(Number(form.lat)) ? Number(form.lat) : null;
-  const lngValue = form.lng !== "" && !Number.isNaN(Number(form.lng)) ? Number(form.lng) : null;
+  const [tags, setTags] = useState<MetaOption[]>([]);
+  const [facilities, setFacilities] = useState<MetaOption[]>([]);
+
+  const latValue =
+    form.lat !== "" && !Number.isNaN(Number(form.lat)) ? Number(form.lat) : null;
+  const lngValue =
+    form.lng !== "" && !Number.isNaN(Number(form.lng)) ? Number(form.lng) : null;
 
   function handlePickLocation(coords: { lat: number; lng: number }) {
     setForm((prev) => ({
@@ -45,28 +66,30 @@ export default function AddPlaceForm({
 
   useEffect(() => {
     const fetchMeta = async () => {
-      const res = await fetch("/api/meta");
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/meta");
+        if (!res.ok) throw new Error("Failed to fetch meta");
 
-      setTags(data.tags);
-      setFacilities(data.facilities);
+        const data = await res.json();
+        setTags(data.tags ?? []);
+        setFacilities(data.facilities ?? []);
+      } catch (error) {
+        console.error(error);
+        toast.error("暫時無法載入分類資料");
+      }
     };
 
     fetchMeta();
   }, []);
 
   const handleClose = () => {
-    // toast("確定不新增嗎？", {
-    //   icon: "🤔",
-    // });
-  
     onCancel();
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isNaN(Number(form.lat)) || isNaN(Number(form.lng))) {
+    if (Number.isNaN(Number(form.lat)) || Number.isNaN(Number(form.lng))) {
       toast.error("請輸入正確的經緯度！");
       return;
     }
@@ -111,96 +134,92 @@ export default function AddPlaceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <section>
-        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
-          名稱 <span className="text-brand-softInk">*</span>
+      <section className={ui.section}>
+        <label className={ui.fieldLabel}>
+          名稱 <span className={ui.muted}>*</span>
         </label>
         <input
           required
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+          className={ui.inputBase}
+          placeholder="例如：親子友善咖啡廳"
         />
       </section>
 
-      <section>
-        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
-          地址 <span className="text-brand-softInk">*</span>
+      <section className={ui.section}>
+        <label className={ui.fieldLabel}>
+          地址 <span className={ui.muted}>*</span>
         </label>
         <input
           required
           value={form.address}
           onChange={(e) => setForm({ ...form, address: e.target.value })}
-          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+          className={ui.inputBase}
+          placeholder="請輸入完整地址"
         />
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between">
+      <section className={ui.section}>
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-brand-ink dark:text-white">
-              地圖選點
-            </h3>
-            <p className="mt-1 text-xs text-brand-softInk dark:text-white/70">
-              可以直接點一下地圖，自動帶入經緯度
-            </p>
+            <h3 className={ui.sectionTitle}>地圖選點</h3>
+            <p className={ui.fieldHint}>可以直接點一下地圖，自動帶入經緯度</p>
           </div>
         </div>
 
-        <LocationPickerMap
-          lat={latValue}
-          lng={lngValue}
-          onPick={handlePickLocation}
-        />
+        <div className={`${ui.modalPanel} overflow-hidden p-2`}>
+          <LocationPickerMap
+            lat={latValue}
+            lng={lngValue}
+            onPick={handlePickLocation}
+          />
+        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
-            緯度 *
-          </label>
+        <div className={ui.section}>
+          <label className={ui.fieldLabel}>緯度 *</label>
           <input
             type="number"
             step="any"
             required
             value={form.lat}
             onChange={(e) => setForm({ ...form, lat: e.target.value })}
-            className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+            className={ui.inputBase}
+            placeholder="例如：25.033964"
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
-            經度 *
-          </label>
+        <div className={ui.section}>
+          <label className={ui.fieldLabel}>經度 *</label>
           <input
             type="number"
             step="any"
             required
             value={form.lng}
             onChange={(e) => setForm({ ...form, lng: e.target.value })}
-            className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+            className={ui.inputBase}
+            placeholder="例如：121.564468"
           />
         </div>
       </section>
 
-      <section>
-        <label className="mb-2 block text-sm font-semibold text-brand-ink dark:text-white">
-          描述
-        </label>
+      <section className={ui.section}>
+        <label className={ui.fieldLabel}>描述</label>
         <textarea
           value={form.description}
           onChange={(e) =>
             setForm({ ...form, description: e.target.value })
           }
-          className="w-full rounded-2xl border border-brand-line bg-brand-cream px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-peach dark:bg-[#2A2421]"
+          className={ui.textarea}
+          rows={4}
+          placeholder="補充地點特色、適合年齡、注意事項..."
         />
       </section>
 
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-brand-ink dark:text-white">
-          分類
-        </h3>
+      <section className={ui.section}>
+        <h3 className={ui.sectionTitle}>分類</h3>
 
         <div className="flex flex-wrap gap-2.5">
           {tags.map((tag) => {
@@ -218,10 +237,10 @@ export default function AddPlaceForm({
                   )
                 }
                 className={[
-                  "rounded-full border px-4 py-2 text-sm font-medium transition",
+                  selectablePillBase,
                   selected
-                    ? "border-brand-peach bg-brand-peach/15"
-                    : "border-brand-line bg-white hover:bg-brand-cream",
+                    ? selectablePillPeachActive
+                    : selectablePillNeutral,
                 ].join(" ")}
               >
                 {tag.name}
@@ -231,53 +250,51 @@ export default function AddPlaceForm({
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-brand-ink dark:text-white">
-          設施
-        </h3>
+      <section className={ui.section}>
+        <h3 className={ui.sectionTitle}>設施</h3>
 
         <div className="flex flex-wrap gap-2.5">
-          {facilities.map((f) => {
-            const selected = selectedFacilities.includes(f.id);
+          {facilities.map((facility) => {
+            const selected = selectedFacilities.includes(facility.id);
 
             return (
               <button
-                key={f.id}
+                key={facility.id}
                 type="button"
                 onClick={() =>
                   setSelectedFacilities((prev) =>
                     selected
-                      ? prev.filter((id) => id !== f.id)
-                      : [...prev, f.id]
+                      ? prev.filter((id) => id !== facility.id)
+                      : [...prev, facility.id]
                   )
                 }
                 className={[
-                  "rounded-full border px-4 py-2 text-sm font-medium transition",
+                  selectablePillBase,
                   selected
-                    ? "border-brand-mint bg-brand-mint/15"
-                    : "border-brand-line bg-white hover:bg-brand-cream",
+                    ? selectablePillMintActive
+                    : selectablePillNeutral,
                 ].join(" ")}
               >
-                {f.name}
+                {facility.name}
               </button>
             );
           })}
         </div>
       </section>
 
-      <div className="border-t border-brand-line pt-4">
+      <div className={`${ui.divider} pt-4`}>
         <div className="flex gap-3">
           <button
             type="button"
             onClick={handleClose}
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-brand-line bg-white text-sm font-semibold text-brand-softInk hover:bg-brand-sand"
+            className={`${ui.buttonBase} ${ui.buttonMd} ${ui.buttonSecondary} flex-1`}
           >
             取消
           </button>
 
           <button
             type="submit"
-            className="inline-flex h-12 flex-[1.4] items-center justify-center rounded-full bg-brand-peach text-sm font-semibold text-white shadow-sm hover:opacity-95"
+            className={`${ui.buttonBase} ${ui.buttonMd} ${ui.buttonPrimary} flex-[1.4]`}
           >
             新增地點
           </button>

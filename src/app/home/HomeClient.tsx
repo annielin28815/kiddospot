@@ -7,6 +7,7 @@ import { Place } from "@/src/types/place";
 import BrandLogo from "@/src/components/BrandLogo";
 import PlacesClient from "@/src/components/PlaceClient";
 import LoginButton from "@/src/components/LoginButton";
+import { ui } from "@/src/lib/ui";
 
 type FilterOption = {
   id: string;
@@ -86,12 +87,16 @@ export default function Home() {
   return (
     <main className="h-dvh text-brand-ink dark:bg-[#1F1A17] dark:text-white">
       <section className="mx-auto flex h-full w-full max-w-[720px] flex-col border-x-0 bg-white/65 md:border-x md:border-brand-line">
-        <header className="sticky top-0 z-[1000] flex shrink-0 justify-between border-b border-brand-line bg-brand-cream px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#1F1A17]/90">
+      <header className="sticky top-0 z-[1000] shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-page)]/90 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <BrandLogo size={42} showText={false} />
-            <div>
-              <h1 className="text-lg font-semibold leading-none">Kiddospot</h1>
-              <p className="mt-1 text-xs text-brand-softInk dark:text-white/70">
+
+            <div className="min-w-0">
+              <h1 className={`${ui.titleLg} leading-none text-[var(--color-text-primary)]`}>
+                Kiddospot
+              </h1>
+              <p className={`${ui.caption} mt-1 text-[var(--color-text-secondary)]`}>
                 Little spots, big smiles.
               </p>
             </div>
@@ -102,7 +107,8 @@ export default function Home() {
             onOpenCreate={handleOpenCreate}
             onMenuOpenChange={setIsUserMenuOpen}
           />
-        </header>
+        </div>
+      </header>
 
         <div className="min-h-0 flex-1">
           {!isLoading && (

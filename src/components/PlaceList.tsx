@@ -1,39 +1,105 @@
-import { MapPin, Heart, ChevronRight  } from "lucide-react";
+import React from "react";
+import { MapPin, Heart, ChevronRight } from "lucide-react";
 import { Place } from "@/src/types/place";
+import { ui } from "@/src/lib/ui";
 
-const cardThemes = [
-  {
-    bg: "bg-[#FFF1E7]",
-    border: "border-[#F4D7BE]",
-    chip: "bg-white/75 text-[#8A4B00] border border-white/50",
-    subChip: "bg-[#F9E4D2] text-[#6B3A00] border border-white/30",
-    accent: "bg-[#F4A261]/18",
-    accent2: "bg-[#F4A261]/10",
+type CardTheme = {
+  bg: string;
+  border: string;
+  title: string;
+  text: string;
+  subText: string;
+  icon: string;
+  chip: string;
+  subChip: string;
+  moreText: string;
+  accent: string;
+  accent2: string;
+  favorite: {
+    active: string;
+    inactive: string;
+  };
+  selected: string;
+  hover: string;
+};
+
+const sharedTheme = {
+  title: "text-[#3A2E2A] dark:text-[#F7EEE8]",
+  text: "text-[#6B5B52] dark:text-[#CBBDB2]",
+  subText: "text-[#8F7B70] dark:text-[#A3958A]",
+  icon: "text-[#8F7B70] dark:text-[#CBBDB2]",
+  moreText: "text-[#8C7B71] dark:text-[#A3958A]",
+
+  favorite: {
+    active:
+      "border-[#F4A261]/30 bg-[#F4A261]/15 text-[#F4A261] dark:bg-[#F4A261]/20 dark:border-[#F4A261]/40",
+    inactive:
+      "border-white/40 bg-white/60 text-[#8F7B70] hover:bg-white dark:bg-white/10 dark:border-white/10 dark:text-[#CBBDB2] dark:hover:bg-white/20",
   },
-  {
-    bg: "bg-[#F4EEFF]",
-    border: "border-[#D9C9F3]",
-    chip: "bg-white/75 text-[#5F4B8B] border border-white/50",
-    subChip: "bg-[#E9DFFD] text-[#5B4A84] border border-white/30",
-    accent: "bg-[#B8A1E3]/18",
-    accent2: "bg-[#B8A1E3]/10",
-  },
-  {
-    bg: "bg-[#EEF8F1]",
-    border: "border-[#CFE6D7]",
-    chip: "bg-white/75 text-[#456A54] border border-white/50",
-    subChip: "bg-[#DDEFE4] text-[#3F624E] border border-white/30",
-    accent: "bg-[#8CBF9F]/18",
-    accent2: "bg-[#8CBF9F]/10",
-  },
-  {
-    bg: "bg-[#EEF6FD]",
-    border: "border-[#D3E4F3]",
-    chip: "bg-white/75 text-[#46627D] border border-white/50",
-    subChip: "bg-[#DDECF8] text-[#415C75] border border-white/30",
-    accent: "bg-[#7FA7C9]/18",
-    accent2: "bg-[#7FA7C9]/10",
-  },
+
+  selected: "border-[#3A2E2A]/15 dark:border-white/10",
+  hover: "border-white/60 dark:border-white/10",
+};
+
+function createCardTheme(config: {
+  bg: string;
+  border: string;
+  chip: string;
+  subChip: string;
+  accent: string;
+  accent2: string;
+}): CardTheme {
+  return {
+    ...sharedTheme,
+    bg: config.bg,
+    border: config.border,
+    chip: config.chip,
+    subChip: config.subChip,
+    accent: config.accent,
+    accent2: config.accent2,
+  };
+}
+
+const cardThemes: CardTheme[] = [
+  createCardTheme({
+    bg: "bg-[#FFF1E7] dark:bg-[rgba(244,162,97,0.12)]",
+    border: "border-[#F4D7BE] dark:border-[rgba(244,162,97,0.25)]",
+    chip: "bg-white/75 text-[#8A4B00] border border-white/50 dark:bg-white/10 dark:text-[#F4A261] dark:border-white/10",
+    subChip:
+      "bg-[#F9E4D2] text-[#6B3A00] border border-white/30 dark:bg-[rgba(244,162,97,0.15)] dark:text-[#F4A261] dark:border-transparent",
+    accent: "bg-[#F4A261]/18 dark:bg-[#F4A261]/12",
+    accent2: "bg-[#F4A261]/10 dark:bg-[#F4A261]/6",
+  }),
+
+  createCardTheme({
+    bg: "bg-[#F4EEFF] dark:bg-[rgba(184,161,227,0.12)]",
+    border: "border-[#D9C9F3] dark:border-[rgba(184,161,227,0.25)]",
+    chip: "bg-white/75 text-[#5F4B8B] border border-white/50 dark:bg-white/10 dark:text-[#B8A1E3] dark:border-white/10",
+    subChip:
+      "bg-[#E9DFFD] text-[#5B4A84] border border-white/30 dark:bg-[rgba(184,161,227,0.15)] dark:text-[#B8A1E3] dark:border-transparent",
+    accent: "bg-[#B8A1E3]/18 dark:bg-[#B8A1E3]/12",
+    accent2: "bg-[#B8A1E3]/10 dark:bg-[#B8A1E3]/6",
+  }),
+
+  createCardTheme({
+    bg: "bg-[#EEF8F1] dark:bg-[rgba(140,191,159,0.12)]",
+    border: "border-[#CFE6D7] dark:border-[rgba(140,191,159,0.25)]",
+    chip: "bg-white/75 text-[#456A54] border border-white/50 dark:bg-white/10 dark:text-[#8CBF9F] dark:border-white/10",
+    subChip:
+      "bg-[#DDEFE4] text-[#3F624E] border border-white/30 dark:bg-[rgba(140,191,159,0.15)] dark:text-[#8CBF9F] dark:border-transparent",
+    accent: "bg-[#8CBF9F]/18 dark:bg-[#8CBF9F]/12",
+    accent2: "bg-[#8CBF9F]/10 dark:bg-[#8CBF9F]/6",
+  }),
+
+  createCardTheme({
+    bg: "bg-[#EEF6FD] dark:bg-[rgba(127,167,201,0.12)]",
+    border: "border-[#D3E4F3] dark:border-[rgba(127,167,201,0.25)]",
+    chip: "bg-white/75 text-[#46627D] border border-white/50 dark:bg-white/10 dark:text-[#7FA7C9] dark:border-white/10",
+    subChip:
+      "bg-[#DDECF8] text-[#415C75] border border-white/30 dark:bg-[rgba(127,167,201,0.15)] dark:text-[#7FA7C9] dark:border-transparent",
+    accent: "bg-[#7FA7C9]/18 dark:bg-[#7FA7C9]/12",
+    accent2: "bg-[#7FA7C9]/10 dark:bg-[#7FA7C9]/6",
+  }),
 ];
 
 const getCardTheme = (index: number) => cardThemes[index % cardThemes.length];
@@ -60,119 +126,131 @@ export default function PlaceList({
   onToggleFavorite,
 }: PlaceListProps) {
   return (
-    <div className="h-full space-y-4 overflow-y-auto p-4">
-      {places.map((place, index) => {
-        const theme = getCardTheme(index);
-        const isSelected = selectedPlaceId === place.id;
-        const isHovered = hoveredPlaceId === place.id;
-        const isFavorited =
-          !!userId && (place.favorites?.some((f) => f.userId === userId) ?? false);
+    <div className="h-full overflow-y-auto p-4">
+      <div className={ui.section}>
+        {places.map((place, index) => {
+          const theme = getCardTheme(index);
+          const isSelected = selectedPlaceId === place.id;
+          const isHovered = hoveredPlaceId === place.id;
+          const isFavorited =
+            !!userId &&
+            (place.favorites?.some((f) => f.userId === userId) ?? false);
 
-        return (
-          <div
-            key={place.id}
-            ref={(el) => {
-              itemRefs.current[place.id] = el;
-            }}
-            onClick={() => onSelect(place.id)}
-            onMouseEnter={() => onHover(place.id)}
-            onMouseLeave={() => onHover(null)}
-            className={[
-              "relative cursor-pointer overflow-hidden rounded-2xl border p-4 shadow-sm transition-all duration-250 ease-out cursor-pointer",
-              theme.bg,
-              theme.border,
-              isSelected
-                ? "border-[#3A2E2A]/15 ring-2 ring-white/60 shadow-[0_8px_24px_rgba(58,46,42,0.10)] scale-[1.01]"
-                : "border-transparent shadow-sm",
-              isHovered && !isSelected
-                ? "-translate-y-[2px] border-white/60 shadow-[0_10px_24px_rgba(58,46,42,0.08)]"
-                : "",
-            ].join(" ")}
-          >
+          return (
             <div
-              className={`absolute -bottom-10 -right-10 h-28 w-28 rounded-full ${theme.accent}`}
-            />
-            <div
-              className={`absolute -bottom-4 -right-4 h-16 w-16 rounded-full ${theme.accent2}`}
-            />
+              key={place.id}
+              ref={(el) => {
+                itemRefs.current[place.id] = el;
+              }}
+              onClick={() => onSelect(place.id)}
+              onMouseEnter={() => onHover(place.id)}
+              onMouseLeave={() => onHover(null)}
+              className={[
+                ui.cardBase,
+                ui.cardInteractive,
+                theme.bg,
+                theme.border,
+                isSelected
+                  ? `${theme.selected} ${ui.cardSelected} scale-[1.01]`
+                  : "shadow-sm",
+                isHovered && !isSelected
+                  ? `${theme.hover} ${ui.cardHover}`
+                  : "",
+              ].join(" ")}
+            >
+              {/* 背景裝飾 */}
+              <div
+                className={`absolute -bottom-10 -right-10 h-28 w-28 rounded-full ${theme.accent}`}
+              />
+              <div
+                className={`absolute -bottom-4 -right-4 h-16 w-16 rounded-full ${theme.accent2}`}
+              />
 
-            {/* 右上角收藏 */}
-            <div className="absolute right-3 top-3 z-20">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavorite(place.id);
-                }}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-sm transition cursor-pointer ${
-                  isFavorited
-                    ? "border-[#F4A261]/30 bg-[#F4A261]/15 text-[#F4A261]"
-                    : "border-white/40 bg-white/60 text-[#8F7B70] hover:bg-white"
-                }`}
-                aria-label={isFavorited ? "Remove favorite" : "Add favorite"}
-              >
-                <Heart
-                  size={16}
-                  className={isFavorited ? "fill-current" : ""}
-                />
-              </button>
-            </div>
+              {/* 收藏 */}
+              <div className="absolute right-3 top-3 z-20">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(place.id);
+                  }}
+                  className={[
+                    ui.iconButton,
+                    ui.iconButtonNeutral,
+                    isFavorited
+                      ? theme.favorite.active
+                      : theme.favorite.inactive,
+                  ].join(" ")}
+                >
+                  <Heart
+                    size={16}
+                    className={isFavorited ? "fill-current" : ""}
+                  />
+                </button>
+              </div>
 
-            {/* 主內容 */}
-            <div className="relative z-10 pr-16">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-[15px] font-semibold leading-5 text-[#3A2E2A]">
-                    {place.name}
-                  </h3>
-                  <ChevronRight size={16} />
+              {/* 主內容 */}
+              <div className="relative z-10 pr-16">
+                <div className={ui.section}>
+                  <div className="flex items-center gap-2">
+                    <h3 className={`${ui.title} ${theme.title}`}>
+                      {place.name}
+                    </h3>
+                    <ChevronRight size={16} className={theme.icon} />
+                  </div>
+
+                  <p
+                    className={`flex items-start gap-1.5 ${ui.bodySm} ${theme.text}`}
+                  >
+                    <MapPin
+                      className={`${ui.addressIcon} ${theme.subText}`}
+                    />
+                    <span className="line-clamp-2">
+                      {place.address}
+                    </span>
+                  </p>
+
+                  {place.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {place.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag.tagId}
+                          className={`${ui.chipBase} ${theme.chip}`}
+                        >
+                          {tag.tag.name}
+                        </span>
+                      ))}
+                      {place.tags.length > 3 && (
+                        <span className={`${ui.moreText} ${theme.moreText}`}>
+                          +{place.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {place.facilities?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {place.facilities.slice(0, 3).map((facility) => (
+                        <span
+                          key={facility.facilityId}
+                          className={`${ui.chipBase} ${theme.subChip}`}
+                        >
+                          {facility.facility.name}
+                        </span>
+                      ))}
+                      {place.facilities.length > 3 && (
+                        <span className={`${ui.moreText} ${theme.moreText}`}>
+                          +{place.facilities.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-
-                <p className="flex items-start gap-1.5 text-xs leading-5 text-[#6B5B52]">
-                  <MapPin className="mt-[2px] h-3.5 w-3.5 shrink-0 text-[#8F7B70]" />
-                  <span className="line-clamp-2">{place.address}</span>
-                </p>
-
-                {place.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {place.tags.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag.tagId}
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.01em] ${theme.chip}`}
-                      >
-                        {tag.tag.name}
-                      </span>
-                    ))}
-                    {place.tags.length > 3 && (
-                      <span className="inline-flex items-center px-1.5 py-1 text-[11px] text-[#8C7B71]">
-                        +{place.tags.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {place.facilities?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {place.facilities.slice(0, 3).map((facility) => (
-                      <span
-                        key={facility.facilityId}
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.01em] ${theme.subChip}`}
-                      >
-                        {facility.facility.name}
-                      </span>
-                    ))}
-                    {place.facilities.length > 3 && (
-                      <span className="inline-flex items-center px-1.5 py-1 text-[11px] text-[#8C7B71]">
-                        +{place.facilities.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

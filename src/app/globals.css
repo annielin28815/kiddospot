@@ -1,41 +1,54 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #FDF3ED;
-  --color-foreground: #3A2E2A;
+  /* 🌞 Light mode */
+  --color-bg-page: #FDF3ED;
+  --color-bg-surface: #FFFDFB;
 
+  --color-text-primary: #3A2E2A;
+  --color-text-secondary: #6B5B52;
+  --color-text-muted: #8F7B70;
+
+  --color-border: #EADBC8;
+
+  /* Brand */
   --color-brand-peach: #F4A261;
   --color-brand-lavender: #B8A1E3;
   --color-brand-mint: #8CBF9F;
   --color-brand-sky: #7FA7C9;
-  --color-brand-cream: #FDF3ED;
-  --color-brand-sand: #F6EBDD;
-  --color-brand-ink: #3A2E2A;
-  --color-brand-softInk: #6B5B52;
-  --color-brand-line: #EADBC8;
 
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: monospace;
-
+  /* Effects */
   --shadow-soft: 0 8px 30px rgba(58, 46, 42, 0.08);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
   --radius-3xl: 1.5rem;
 }
 
+/* 🌙 Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #1f1a17;
-    --color-foreground: #ededed;
+    --color-bg-page: #1F1A17;
+    --color-bg-surface: #2A2421;
+
+    --color-text-primary: #F7EEE8;
+    --color-text-secondary: #CBBDB2;
+    --color-text-muted: #A3958A;
+
+    --color-border: #4A3F39;
+
+    --color-brand-peach: #E5955B;
+    --color-brand-lavender: #A78ED8;
+    --color-brand-mint: #78A98B;
+    --color-brand-sky: #6B93B3;
+
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.4);
   }
 }
 
-html,
 body {
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
   height: 100%;
-}
-
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -55,19 +68,19 @@ body {
 .marker-dot {
   width: 14px;
   height: 14px;
-  background: #7FA7C9;
+  background: var(--color-brand-sky);
   border-radius: 50%;
   transition: all 0.2s ease;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
 
 .marker-dot.hovered {
-  background: #F4A261;
+  background: var(--color-brand-peach);
   transform: scale(1.3);
 }
 
 .marker-dot.selected {
-  background: #B8A1E3;
+  background: var(--color-brand-lavender);
   transform: scale(1.6);
 }
 

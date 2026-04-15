@@ -8,6 +8,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import { Heart, List, MapPinPlus, MapPinned } from "lucide-react";
 import { createPortal } from "react-dom";
+import { ui } from "@/src/lib/ui";
 
 import type { Place } from "@/src/types/place";
 import PlaceList from "./PlaceList";
@@ -291,18 +292,23 @@ export default function PlacesClient({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SearchFilterBar
-        tags={tags}
-        facilities={facilities}
-        value={filters}
-        onApply={handleApply}
-        onClear={handleClear}
-        onOpenChange={onFilterOpenChange}
-      />
+      <div className="sticky top-0 z-[900] border-b border-[var(--color-border)] bg-[var(--color-bg-page)]/88 backdrop-blur">
+        <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-3">
+          <SearchFilterBar
+            tags={tags}
+            facilities={facilities}
+            value={filters}
+            onApply={handleApply}
+            onClear={handleClear}
+            onOpenChange={onFilterOpenChange}
+            compact
+          />
 
-      <div className="flex items-center justify-end border-b border-brand-line bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/5">
-        <div className="text-xs text-brand-softInk dark:text-white/60">
-          {isLoading ? "搜尋中..." : `共 ${filteredPlaces.length} 筆`}
+          <div className="mt-3 flex items-center justify-between">
+            <p className={`${ui.caption} ${ui.secondary}`}>
+              {isLoading ? "搜尋中..." : `共 ${filteredPlaces.length} 筆結果`}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -328,7 +334,7 @@ export default function PlacesClient({
               <div
                 className={
                   overlay
-                    ? "pointer-events-auto max-w-xs rounded-3xl border border-brand-line bg-white/92 px-5 py-4 text-center shadow-soft backdrop-blur dark:border-white/10 dark:bg-[#2A2421]/92"
+                    ? "pointer-events-auto max-w-xs rounded-3xl border border-brand-line bg-white/92 px-5 py-4 text-center shadow-soft backdrop-blur dark:border-[#4A3F39] dark:bg-[#2A2421]"
                     : "max-w-xs text-center"
                 }
               >
@@ -338,7 +344,7 @@ export default function PlacesClient({
                     : "目前沒有符合條件的地點 👀"}
                 </p>
 
-                <p className="mt-2 text-xs leading-6 text-brand-softInk dark:text-white/70">
+                <p className="mt-2 text-xs leading-6 text-brand-softInk dark:text-[#CBBDB2]">
                   {showFavoritesOnly
                     ? "先去逛逛地點，看到喜歡的再按愛心收藏吧。"
                     : "可以試試放寬搜尋條件，或切回清單模式看看。"}
@@ -381,7 +387,8 @@ export default function PlacesClient({
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 20)}
-                        className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
+                        // className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
+                        className={`${ui.buttonBase} ${ui.buttonSm} ${ui.buttonGhost}`}
                       >
                         顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
                       </button>
@@ -427,7 +434,7 @@ export default function PlacesClient({
             className={`relative z-10 flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium transition cursor-pointer ${
               viewMode === "list"
                 ? "text-brand-ink"
-                : "text-brand-softInk dark:text-white/70"
+                : "text-brand-softInk dark:text-[#CBBDB2]"
             }`}
           >
             <List size={20} />
@@ -440,7 +447,7 @@ export default function PlacesClient({
             className={`relative z-10 flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium transition cursor-pointer ${
               viewMode === "map"
                 ? "text-brand-ink"
-                : "text-brand-softInk dark:text-white/70"
+                : "text-brand-softInk dark:text-[#CBBDB2]"
             }`}
           >
             <MapPinned size={20} />
@@ -470,7 +477,7 @@ export default function PlacesClient({
                     <h2 className="text-xl font-bold text-brand-ink md:text-2xl dark:text-white">
                       新增地點
                     </h2>
-                    <p className="mt-1 text-sm text-brand-softInk dark:text-white/70">
+                    <p className="mt-1 text-sm text-brand-softInk dark:text-[#CBBDB2]">
                       分享一個適合親子的好地方 ✨
                     </p>
                   </div>
