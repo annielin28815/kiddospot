@@ -134,31 +134,26 @@ export default function PlacesClient({
       : `/api/places`
     : null;
 
-    const externalParams = new URLSearchParams();
+  const externalParams = new URLSearchParams();
 
-    if (keyword.trim()) {
-      externalParams.set("keyword", keyword.trim());
-    }
-    
-    if (source === "familyToilet") {
-      externalParams.append("sourceTypes", "GOV_FAMILY_TOILET");
-    }
-    
-    selectedFacilityNames.forEach((name) => {
-      externalParams.append("facilityNames", name);
-    });
-    
-    externalParams.set("hasLatLngOnly", "true");
-    
-    const externalPlacesApiUrl =
-      shouldFetchExternalPlaces
-        ? `/api/external-places?${externalParams.toString()}`
-        : null;
-
-  // const placesApiUrl = queryString ? `/api/places?${queryString}` : `/api/places`;
-  // const externalPlacesApiUrl = queryString
-  //   ? `/api/external-places?${queryString}&hasLatLngOnly=true`
-  //   : `/api/external-places?hasLatLngOnly=true`;
+  if (keyword.trim()) {
+    externalParams.set("keyword", keyword.trim());
+  }
+  
+  if (source === "familyToilet") {
+    externalParams.append("sourceTypes", "GOV_FAMILY_TOILET");
+  }
+  
+  selectedFacilityNames.forEach((name) => {
+    externalParams.append("facilityNames", name);
+  });
+  
+  externalParams.set("hasLatLngOnly", "true");
+  
+  const externalPlacesApiUrl =
+    shouldFetchExternalPlaces
+      ? `/api/external-places?${externalParams.toString()}`
+      : null;
 
   const {
     data: placesData,
