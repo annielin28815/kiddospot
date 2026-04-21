@@ -23,6 +23,39 @@ type CardTheme = {
   hover: string;
 };
 
+type DisplayTag =
+  | {
+      id: string;
+      name: string;
+    }
+  | {
+      tagId: string;
+      tag: {
+        id: string;
+        name: string;
+      };
+    };
+
+type DisplayFacility =
+  | {
+      id: string;
+      name: string;
+    }
+  | {
+      facilityId: string;
+      facility: {
+        id: string;
+        name: string;
+      };
+    };
+
+type DisplayPlace = Place & {
+  sourceType?: "GOV_FAMILY_TOILET" | "GOV_NURSING_ROOM" | "GOV_PARENTING_CENTER";
+  sourceLabel?: string;
+  tags?: DisplayTag[];
+  facilities?: DisplayFacility[];
+};
+
 const sharedTheme = {
   title: "text-[#3A2E2A] dark:text-[#F7EEE8]",
   text: "text-[#6B5B52] dark:text-[#CBBDB2]",
@@ -104,8 +137,28 @@ const cardThemes: CardTheme[] = [
 
 const getCardTheme = (index: number) => cardThemes[index % cardThemes.length];
 
+function getTagKey(tag: DisplayTag) {
+  return "tagId" in tag ? tag.tagId : tag.id;
+}
+
+function getTagName(tag: DisplayTag) {
+  return "tag" in tag ? tag.tag.name : tag.name;
+}
+
+function getFacilityKey(facility: DisplayFacility) {
+  return "facilityId" in facility ? facility.facilityId : facility.id;
+}
+
+function getFacilityName(facility: DisplayFacility) {
+  return "facility" in facility ? facility.facility.name : facility.name;
+}
+
+function isExternalPlace(place: DisplayPlace) {
+  return !!place.sourceType;
+}
+
 type PlaceListProps = {
-  places: Place[];
+  places: DisplayPlace[];
   selectedPlaceId: string | null;
   hoveredPlaceId: string | null;
   onSelect: (id: string) => void;
@@ -167,36 +220,52 @@ export default function PlaceList({
               />
 
               {/* 收藏 */}
-              <div className="absolute right-3 top-3 z-20">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleFavorite(place.id);
-                  }}
-                  className={[
-                    ui.iconButton,
-                    ui.iconButtonNeutral,
-                    isFavorited
-                      ? theme.favorite.active
-                      : theme.favorite.inactive,
-                  ].join(" ")}
-                >
-                  <Heart
-                    size={16}
-                    className={isFavorited ? "fill-current" : ""}
-                  />
-                </button>
-              </div>
+              {!isExternalPlace(place) && (
+                <div className="absolute right-3 top-3 z-20">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleFavorite(place.id);
+                    }}
+                    className={[
+                      ui.iconButton,
+                      ui.iconButtonNeutral,
+                      isFavorited
+                        ? theme.favorite.active
+                        : theme.favorite.inactive,
+                    ].join(" ")}
+                  >
+                    <Heart
+                      size={16}
+                      className={isFavorited ? "fill-current" : ""}
+                    />
+                  </button>
+                </div>
+              )}
 
               {/* 主內容 */}
               <div className="relative z-10 pr-16">
                 <div className={ui.section}>
-                  <div className="flex items-center gap-2">
-                    <h3 className={`${ui.title} ${theme.title}`}>
-                      {place.name}
-                    </h3>
-                    <ChevronRight size={16} className={theme.icon} />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`${ui.title} ${theme.title}`}>
+                          {place.name}
+                        </h3>
+                        <ChevronRight size={16} className={theme.icon} />
+                      </div>
+
+                      {place.sourceLabel && (
+                        <div className="mt-1">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${theme.subChip}`}
+                          >
+                            {place.sourceLabel}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <p
@@ -214,10 +283,10 @@ export default function PlaceList({
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {place.tags.slice(0, 3).map((tag) => (
                         <span
-                          key={tag.tagId}
+                          key={getTagKey(tag)}
                           className={`${ui.chipBase} ${theme.chip}`}
                         >
-                          {tag.tag.name}
+                          {getTagName(tag)}
                         </span>
                       ))}
                       {place.tags.length > 3 && (
@@ -232,10 +301,10 @@ export default function PlaceList({
                     <div className="flex flex-wrap gap-1.5">
                       {place.facilities.slice(0, 3).map((facility) => (
                         <span
-                          key={facility.facilityId}
+                          key={getFacilityKey(facility)}
                           className={`${ui.chipBase} ${theme.subChip}`}
                         >
-                          {facility.facility.name}
+                          {getFacilityName(facility)}
                         </span>
                       ))}
                       {place.facilities.length > 3 && (

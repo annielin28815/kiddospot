@@ -24,10 +24,13 @@ type FilterOption = {
   name: string;
 };
 
+type SourceFilterValue = "all" | "user" | "familyToilet";
+
 type SearchFilterValue = {
   keyword: string;
   tagIds: string[];
   facilityIds: string[];
+  source: SourceFilterValue;
 };
 
 type PlacesApiResponse = {
@@ -44,6 +47,22 @@ type PlacesClientProps = {
   isUserMenuOpen: boolean;
   isFilterOpen: boolean;
   onFilterOpenChange: (open: boolean) => void;
+};
+
+type ExternalPlace = Place & {
+  sourceType?: "GOV_FAMILY_TOILET" | "GOV_NURSING_ROOM" | "GOV_PARENTING_CENTER";
+  sourceLabel?: string;
+  city?: string | null;
+  district?: string | null;
+  phone?: string | null;
+  openTime?: string | null;
+  note?: string | null;
+  officialUrl?: string | null;
+};
+
+type ExternalPlacesApiResponse = {
+  places: ExternalPlace[];
+  total: number;
 };
 
 const fetcher = async (url: string): Promise<PlacesApiResponse> => {
@@ -89,24 +108,102 @@ export default function PlacesClient({
   const tagIds = searchParams.getAll("tags");
   const facilityIds = searchParams.getAll("facilities");
 
+  const source = (searchParams.get("source") as SourceFilterValue) || "all";
+
   const filters: SearchFilterValue = {
     keyword,
     tagIds,
     facilityIds,
+    source,
   };
 
+  const selectedFacilityNames = useMemo(() => {
+    return facilities
+      .filter((facility) => facilityIds.includes(facility.id))
+      .map((facility) => facility.name);
+  }, [facilities, facilityIds]);
+
   const queryString = searchParams.toString();
-  const apiUrl = queryString ? `/api/places?${queryString}` : `/api/places`;
 
-  const { data, isLoading, mutate } = useSWR<PlacesApiResponse>(apiUrl, fetcher, {
-    fallbackData: {
-      places: initialPlaces,
-      total: initialPlaces.length,
-    },
-    revalidateOnFocus: false,
-  });
+  const shouldFetchUserPlaces = source === "all" || source === "user";
+  const shouldFetchExternalPlaces = (source === "all" || source === "familyToilet") && tagIds.length === 0;
+  
+  const placesApiUrl = shouldFetchUserPlaces
+    ? queryString
+      ? `/api/places?${queryString}`
+      : `/api/places`
+    : null;
 
-  const places = data?.places ?? initialPlaces;
+    const externalParams = new URLSearchParams();
+
+    if (keyword.trim()) {
+      externalParams.set("keyword", keyword.trim());
+    }
+    
+    if (source === "familyToilet") {
+      externalParams.append("sourceTypes", "GOV_FAMILY_TOILET");
+    }
+    
+    selectedFacilityNames.forEach((name) => {
+      externalParams.append("facilityNames", name);
+    });
+    
+    externalParams.set("hasLatLngOnly", "true");
+    
+    const externalPlacesApiUrl =
+      shouldFetchExternalPlaces
+        ? `/api/external-places?${externalParams.toString()}`
+        : null;
+
+  // const placesApiUrl = queryString ? `/api/places?${queryString}` : `/api/places`;
+  // const externalPlacesApiUrl = queryString
+  //   ? `/api/external-places?${queryString}&hasLatLngOnly=true`
+  //   : `/api/external-places?hasLatLngOnly=true`;
+
+  const {
+    data: placesData,
+    isLoading: isPlacesLoading,
+    mutate,
+  } = useSWR<PlacesApiResponse>(
+    placesApiUrl,
+    fetcher,
+    {
+      fallbackData: shouldFetchUserPlaces
+        ? {
+            places: initialPlaces,
+            total: initialPlaces.length,
+          }
+        : {
+            places: [],
+            total: 0,
+          },
+      revalidateOnFocus: false,
+    }
+  );
+
+  const {
+    data: externalPlacesData,
+    isLoading: isExternalPlacesLoading,
+  } = useSWR<ExternalPlacesApiResponse>(
+    externalPlacesApiUrl,
+    fetcher,
+    {
+      fallbackData: {
+        places: [],
+        total: 0,
+      },
+      revalidateOnFocus: false,
+    }
+  );
+  
+  const isLoading = isPlacesLoading || isExternalPlacesLoading;
+  
+  const places = useMemo<ExternalPlace[]>(() => {
+    const userPlaces = placesData?.places ?? initialPlaces;
+    const externalPlaces = externalPlacesData?.places ?? [];
+  
+    return [...userPlaces, ...externalPlaces];
+  }, [placesData?.places, externalPlacesData?.places, initialPlaces]);
 
   const [mounted, setMounted] = useState(false);
 
@@ -137,6 +234,10 @@ export default function PlacesClient({
       params.set("keyword", next.keyword.trim());
     }
 
+    if (next.source && next.source !== "all") {
+      params.set("source", next.source);
+    }
+
     next.tagIds.forEach((id) => params.append("tags", id));
     next.facilityIds.forEach((id) => params.append("facilities", id));
 
@@ -150,7 +251,7 @@ export default function PlacesClient({
     router.push(pathname, { scroll: false });
   }
 
-  function isPlaceFavorited(place: Place) {
+  function isPlaceFavorited(place: ExternalPlace) {
     if (!userId) return false;
     return place.favorites?.some((favorite) => favorite.userId === userId) ?? false;
   }
@@ -197,13 +298,17 @@ export default function PlacesClient({
 
   async function handleToggleFavorite(placeId: string) {
     if (!isLoggedIn || !userId || isFavoriteSubmitting) return;
-
+  
     const targetPlace = places.find((place) => place.id === placeId);
     if (!targetPlace) return;
-
+  
+    if ("sourceType" in targetPlace && targetPlace.sourceType) {
+      return;
+    }
+  
     const shouldFavorite = !isPlaceFavorited(targetPlace);
     setIsFavoriteSubmitting(true);
-
+  
     try {
       await mutate(
         async (current) => {
@@ -214,22 +319,22 @@ export default function PlacesClient({
             },
             body: JSON.stringify({ placeId }),
           });
-
+  
           if (!res.ok) {
             throw new Error("Failed to toggle favorite");
           }
-
+  
           await res.json();
-
+  
           return current ?? {
-            places,
-            total: places.length,
+            places: placesData?.places ?? initialPlaces,
+            total: (placesData?.places ?? initialPlaces).length,
           };
         },
         {
           optimisticData: (current) => {
-            const currentPlaces = current?.places ?? places;
-
+            const currentPlaces = current?.places ?? placesData?.places ?? initialPlaces;
+  
             return {
               places: updatePlaceFavoriteState(
                 currentPlaces,

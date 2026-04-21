@@ -160,3 +160,82 @@ enum Role {
   USER
   ADMIN
 }
+
+enum ExternalSourceType {
+  GOV_FAMILY_TOILET
+  GOV_NURSING_ROOM
+  GOV_PARENTING_CENTER
+}
+
+model ExternalPlace {
+  id           String             @id @default(cuid())
+  sourceType   ExternalSourceType
+  sourceId     String
+  name         String
+  address      String?
+  lat          Float?
+  lng          Float?
+
+  city         String?
+  district     String?
+  phone        String?
+  openTime     String?
+  note         String?
+  officialUrl  String?
+
+  isActive     Boolean            @default(true)
+  rawData      Json?
+  lastSyncedAt DateTime           @default(now())
+
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  tags         ExternalPlaceTag[]
+  facilities   ExternalPlaceFacility[]
+
+  @@unique([sourceType, sourceId])
+  @@index([sourceType])
+  @@index([isActive])
+  @@index([city, district])
+  @@index([lat, lng])
+}
+
+model ExternalTag {
+  id        String             @id @default(cuid())
+  name      String             @unique
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  places    ExternalPlaceTag[]
+}
+
+model ExternalFacility {
+  id        String                  @id @default(cuid())
+  name      String                  @unique
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  places    ExternalPlaceFacility[]
+}
+
+model ExternalPlaceTag {
+  externalPlaceId String
+  tagId           String
+
+  externalPlace   ExternalPlace @relation(fields: [externalPlaceId], references: [id], onDelete: Cascade)
+  tag             ExternalTag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([externalPlaceId, tagId])
+  @@index([tagId])
+}
+
+model ExternalPlaceFacility {
+  externalPlaceId String
+  facilityId      String
+
+  externalPlace   ExternalPlace    @relation(fields: [externalPlaceId], references: [id], onDelete: Cascade)
+  facility        ExternalFacility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@id([externalPlaceId, facilityId])
+  @@index([facilityId])
+}

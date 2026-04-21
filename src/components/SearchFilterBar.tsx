@@ -14,6 +14,7 @@ type SearchFilterValue = {
   keyword: string;
   tagIds: string[];
   facilityIds: string[];
+  source: SourceFilterValue;
 };
 
 type SearchFilterBarProps = {
@@ -26,10 +27,13 @@ type SearchFilterBarProps = {
   compact?: boolean;
 };
 
+type SourceFilterValue = "all" | "user" | "familyToilet";
+
 const defaultValue: SearchFilterValue = {
   keyword: "",
   tagIds: [],
   facilityIds: [],
+  source: "all",
 };
 
 const pillBase =
@@ -61,6 +65,9 @@ export default function SearchFilterBar({
     value.facilityIds ?? []
   );
   const [mounted, setMounted] = useState(false);
+  const [draftSource, setDraftSource] = useState<SourceFilterValue>(
+    value.source ?? "all"
+  );
 
   useEffect(() => setMounted(true), []);
 
@@ -74,6 +81,7 @@ export default function SearchFilterBar({
     if (!isOpen) return;
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    setDraftSource(value.source ?? "all");
     return () => {
       document.body.style.overflow = original;
     };
@@ -111,9 +119,10 @@ export default function SearchFilterBar({
 
   function handleApply() {
     onApply?.({
-      keyword: draftKeyword.trim(),
+      keyword: draftKeyword,
       tagIds: draftTagIds,
       facilityIds: draftFacilityIds,
+      source: draftSource,
     });
     closeSheet();
   }
@@ -122,6 +131,7 @@ export default function SearchFilterBar({
     setDraftKeyword("");
     setDraftTagIds([]);
     setDraftFacilityIds([]);
+    setDraftSource("all");
   }
 
   function handleClearAll() {
@@ -249,6 +259,46 @@ export default function SearchFilterBar({
                         placeholder="例如：親子餐廳、台中、尿布台"
                         className="w-full bg-transparent text-sm outline-none"
                       />
+                    </div>
+                  </section>
+
+                  {/* source */}
+                  <section className={ui.section}>
+                    <div className="flex justify-between items-center">
+                      <h3 className={ui.fieldLabel}>資料來源</h3>
+                      <span className={ui.caption}>單選</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setDraftSource("all")}
+                        className={`${pillBase} ${
+                          draftSource === "all" ? pillPeach : pillNeutral
+                        }`}
+                      >
+                        全部
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDraftSource("user")}
+                        className={`${pillBase} ${
+                          draftSource === "user" ? pillPeach : pillNeutral
+                        }`}
+                      >
+                        使用者新增
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDraftSource("familyToilet")}
+                        className={`${pillBase} ${
+                          draftSource === "familyToilet" ? pillPeach : pillNeutral
+                        }`}
+                      >
+                        政府資料｜親子廁所
+                      </button>
                     </div>
                   </section>
 
