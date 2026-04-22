@@ -14,6 +14,7 @@ import type { Place } from "@/src/types/place";
 import PlaceList from "./PlaceList";
 import SearchFilterBar from "./SearchFilterBar";
 import AddPlaceForm from "./AddPlaceForm";
+import ListResultBar from "./ListResaultBar";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
@@ -404,11 +405,14 @@ export default function PlacesClient({
             compact
           />
 
-          <div className="mt-3 flex items-center justify-between">
-            <p className={`${ui.caption} ${ui.secondary}`}>
-              {isLoading ? "搜尋中..." : `共 ${filteredPlaces.length} 筆結果`}
-            </p>
-          </div>
+          <ListResultBar
+            isLoading={isLoading}
+            totalCount={filteredPlaces.length}
+            visibleCount={visibleCount}
+            onLoadMore={() => setVisibleCount((prev) => prev + 20)}
+            captionClassName={ui.caption}
+            secondaryClassName={ui.secondary}
+          />
         </div>
       </div>
 
@@ -481,19 +485,6 @@ export default function PlacesClient({
                     userId={userId}
                     onToggleFavorite={handleToggleFavorite}
                   />
-
-                  {filteredPlaces.length > visibleCount && (
-                    <div className="p-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setVisibleCount((prev) => prev + 20)}
-                        // className="text-sm font-medium text-brand-softInk transition hover:text-brand-ink dark:text-white/70 dark:hover:text-white"
-                        className={`${ui.buttonBase} ${ui.buttonSm} ${ui.buttonGhost}`}
-                      >
-                        顯示更多（剩餘 {filteredPlaces.length - visibleCount}）
-                      </button>
-                    </div>
-                  )}
                 </>
               )}
             </div>
