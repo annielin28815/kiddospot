@@ -48,6 +48,7 @@ type PlacesClientProps = {
   isUserMenuOpen: boolean;
   isFilterOpen: boolean;
   onFilterOpenChange: (open: boolean) => void;
+  isMetaLoading: boolean;
 };
 
 type ExternalPlace = Place & {
@@ -85,6 +86,7 @@ export default function PlacesClient({
   isUserMenuOpen,
   isFilterOpen,
   onFilterOpenChange,
+  isMetaLoading
 }: PlacesClientProps) {
   const { data: session, status } = useSession();
 
@@ -202,6 +204,7 @@ export default function PlacesClient({
   }, [placesData?.places, externalPlacesData?.places, initialPlaces]);
 
   const [mounted, setMounted] = useState(false);
+  const isPageLoading = isLoading || isMetaLoading;
 
   useEffect(() => {
     setMounted(true);
@@ -406,7 +409,7 @@ export default function PlacesClient({
           />
 
           <ListResultBar
-            isLoading={isLoading}
+            isLoading={isPageLoading}
             totalCount={filteredPlaces.length}
             visibleCount={visibleCount}
             onLoadMore={() => setVisibleCount((prev) => prev + 20)}

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Place } from "@/src/types/place";
 import { ui } from "@/src/lib/ui";
+import { useMeta } from "@/src/hooks/useMeta";
 
 type AddPlaceFormProps = {
   onCreated: (place: Place) => void;
@@ -47,9 +48,7 @@ export default function AddPlaceForm({
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
-
-  const [tags, setTags] = useState<MetaOption[]>([]);
-  const [facilities, setFacilities] = useState<MetaOption[]>([]);
+  const { tags, facilities, isLoading: isMetaLoading, isError: isMetaError, } = useMeta();
 
   const latValue =
     form.lat !== "" && !Number.isNaN(Number(form.lat)) ? Number(form.lat) : null;
@@ -65,22 +64,10 @@ export default function AddPlaceForm({
   }
 
   useEffect(() => {
-    const fetchMeta = async () => {
-      try {
-        const res = await fetch("/api/meta");
-        if (!res.ok) throw new Error("Failed to fetch meta");
-
-        const data = await res.json();
-        setTags(data.tags ?? []);
-        setFacilities(data.facilities ?? []);
-      } catch (error) {
-        console.error(error);
-        toast.error("暫時無法載入分類資料");
-      }
-    };
-
-    fetchMeta();
-  }, []);
+    if (isMetaError) {
+      toast.error("暫時無法載入分類資料");
+    }
+  }, [isMetaError]);
 
   const handleClose = () => {
     onCancel();

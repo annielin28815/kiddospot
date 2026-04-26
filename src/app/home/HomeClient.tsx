@@ -8,16 +8,7 @@ import BrandLogo from "@/src/components/BrandLogo";
 import PlacesClient from "@/src/components/PlaceClient";
 import LoginButton from "@/src/components/LoginButton";
 import { ui } from "@/src/lib/ui";
-
-type FilterOption = {
-  id: string;
-  name: string;
-};
-
-type MetaResponse = {
-  tags: FilterOption[];
-  facilities: FilterOption[];
-};
+import { useMeta } from "@/src/hooks/useMeta";
 
 type PlacesResponse = {
   places: Place[];
@@ -26,12 +17,11 @@ type PlacesResponse = {
 
 export default function Home() {
   const [places, setPlaces] = useState<Place[]>([]);
-  const [tags, setTags] = useState<FilterOption[]>([]);
-  const [facilities, setFacilities] = useState<FilterOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { tags: metaTags, facilities: metaFacilities, isLoading: isMetaLoading, } = useMeta();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -58,30 +48,25 @@ export default function Home() {
   };
 
   useEffect(() => {
-    async function fetchInitialData() {
+    async function fetchInitialPlaces() {
       try {
-        const [placesRes, metaRes] = await Promise.all([
-          fetch("/api/places"),
-          fetch("/api/meta"),
-        ]);
-
+        const placesRes = await fetch("/api/places");
+  
+        if (!placesRes.ok) {
+          throw new Error("Failed to fetch places");
+        }
+  
         const placesData: PlacesResponse = await placesRes.json();
-        const metaData: MetaResponse = await metaRes.json();
-
         setPlaces(placesData.places ?? []);
-        setTags(metaData.tags ?? []);
-        setFacilities(metaData.facilities ?? []);
       } catch (error) {
-        console.error("Failed to fetch initial data:", error);
+        console.error("Failed to fetch places:", error);
         setPlaces([]);
-        setTags([]);
-        setFacilities([]);
       } finally {
         setIsLoading(false);
       }
     }
-
-    fetchInitialData();
+  
+    fetchInitialPlaces();
   }, []);
 
   return (
@@ -111,17 +96,18 @@ export default function Home() {
       </header>
 
         <div className="min-h-0 flex-1">
-          {!isLoading && (
+          {!isLoading && !isMetaLoading && (
             <Suspense fallback={null}>
               <PlacesClient
                 initialPlaces={places}
-                tags={tags}
-                facilities={facilities}
+                tags={metaTags}
+                facilities={metaFacilities}
                 showCreateModal={showCreateModal}
                 onCloseCreateModal={handleCloseCreate}
                 isUserMenuOpen={isUserMenuOpen}
                 isFilterOpen={isFilterOpen}
                 onFilterOpenChange={setIsFilterOpen}
+                isMetaLoading={isMetaLoading}
               />
             </Suspense>
           )}
