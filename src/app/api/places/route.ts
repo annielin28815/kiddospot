@@ -24,10 +24,8 @@ export async function GET(req: NextRequest) {
       ...(tagIds.length > 0 && {
         tags: {
           some: {
-            tag: {
-              id: {
-                in: tagIds,
-              },
+            tagId: {
+              in: tagIds,
             },
           },
         },
@@ -36,10 +34,8 @@ export async function GET(req: NextRequest) {
       ...(facilityIds.length > 0 && {
         facilities: {
           some: {
-            facility: {
-              id: {
-                in: facilityIds,
-              },
+            facilityId: {
+              in: facilityIds,
             },
           },
         },
@@ -48,29 +44,70 @@ export async function GET(req: NextRequest) {
 
     const places = await prisma.place.findMany({
       where,
-      include: {
-        createdBy: true,
-        tags: { include: { tag: true } },
-        facilities: { include: { facility: true } },
-        favorites: true,
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        description: true,
+        lat: true,
+        lng: true,
+        googlePlaceId: true,
+        avgRating: true,
+        reviewCount: true,
+        createdAt: true,
+        createdById: true,
+
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+
+        tags: {
+          select: {
+            tagId: true,
+            tag: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+
+        facilities: {
+          select: {
+            facilityId: true,
+            facility: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+
+        favorites: {
+          select: {
+            // id: true,
+            userId: true,
+            placeId: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    const safePlaces = places.map((place) => ({
-      ...place,
-      tags: place.tags ?? [],
-      facilities: place.facilities ?? [],
-    }));
-
     return NextResponse.json({
-      places: safePlaces,
-      total: safePlaces.length,
+      places,
+      total: places.length,
     });
   } catch (error) {
-    console.error(error);
+    console.error("[GET /api/places]", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

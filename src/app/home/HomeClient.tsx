@@ -1,23 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Place } from "@/src/types/place";
 import BrandLogo from "@/src/components/BrandLogo";
 import PlacesClient from "@/src/components/PlaceClient";
 import LoginButton from "@/src/components/LoginButton";
 import { ui } from "@/src/lib/ui";
 import { useMeta } from "@/src/hooks/useMeta";
 
-type PlacesResponse = {
-  places: Place[];
-  total: number;
-};
-
 export default function Home() {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -32,13 +24,6 @@ export default function Home() {
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  const handleCloseFavorites = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("favorite");
-    const nextQuery = params.toString();
-    router.push(nextQuery ? `?${nextQuery}` : "/", { scroll: false });
-  };
-
   const handleOpenCreate = () => {
     setShowCreateModal(true);
   };
@@ -46,28 +31,6 @@ export default function Home() {
   const handleCloseCreate = () => {
     setShowCreateModal(false);
   };
-
-  useEffect(() => {
-    async function fetchInitialPlaces() {
-      try {
-        const placesRes = await fetch("/api/places");
-  
-        if (!placesRes.ok) {
-          throw new Error("Failed to fetch places");
-        }
-  
-        const placesData: PlacesResponse = await placesRes.json();
-        setPlaces(placesData.places ?? []);
-      } catch (error) {
-        console.error("Failed to fetch places:", error);
-        setPlaces([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  
-    fetchInitialPlaces();
-  }, []);
 
   return (
     <main className="h-dvh text-brand-ink dark:bg-[#1F1A17] dark:text-white">
@@ -96,10 +59,9 @@ export default function Home() {
       </header>
 
         <div className="min-h-0 flex-1">
-          {!isLoading && !isMetaLoading && (
+          {!isMetaLoading && (
             <Suspense fallback={null}>
               <PlacesClient
-                initialPlaces={places}
                 tags={metaTags}
                 facilities={metaFacilities}
                 showCreateModal={showCreateModal}
@@ -107,7 +69,6 @@ export default function Home() {
                 isUserMenuOpen={isUserMenuOpen}
                 isFilterOpen={isFilterOpen}
                 onFilterOpenChange={setIsFilterOpen}
-                isMetaLoading={isMetaLoading}
               />
             </Suspense>
           )}

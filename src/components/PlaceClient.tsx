@@ -1,12 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
-import { Heart, List, MapPinPlus, MapPinned } from "lucide-react";
+import { List, MapPinned } from "lucide-react";
 import { createPortal } from "react-dom";
 import { ui } from "@/src/lib/ui";
 
@@ -40,7 +39,6 @@ type PlacesApiResponse = {
 };
 
 type PlacesClientProps = {
-  initialPlaces: Place[];
   tags: FilterOption[];
   facilities: FilterOption[];
   showCreateModal: boolean;
@@ -48,7 +46,6 @@ type PlacesClientProps = {
   isUserMenuOpen: boolean;
   isFilterOpen: boolean;
   onFilterOpenChange: (open: boolean) => void;
-  isMetaLoading: boolean;
 };
 
 type ExternalPlace = Place & {
@@ -78,7 +75,6 @@ const fetcher = async (url: string): Promise<PlacesApiResponse> => {
 };
 
 export default function PlacesClient({
-  initialPlaces,
   tags,
   facilities,
   showCreateModal,
@@ -86,7 +82,6 @@ export default function PlacesClient({
   isUserMenuOpen,
   isFilterOpen,
   onFilterOpenChange,
-  isMetaLoading
 }: PlacesClientProps) {
   const { data: session, status } = useSession();
 
@@ -166,16 +161,18 @@ export default function PlacesClient({
     placesApiUrl,
     fetcher,
     {
-      fallbackData: shouldFetchUserPlaces
-        ? {
-            places: initialPlaces,
-            total: initialPlaces.length,
-          }
-        : {
-            places: [],
-            total: 0,
-          },
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 1000 * 10,
+      keepPreviousData: true,
+      ...(shouldFetchUserPlaces
+        ? {}
+        : {
+            fallbackData: {
+              places: [],
+              total: 0,
+            },
+      }),
     }
   );
 
@@ -197,14 +194,14 @@ export default function PlacesClient({
   const isLoading = isPlacesLoading || isExternalPlacesLoading;
   
   const places = useMemo<ExternalPlace[]>(() => {
-    const userPlaces = placesData?.places ?? initialPlaces;
+    const userPlaces = placesData?.places ?? [];
     const externalPlaces = externalPlacesData?.places ?? [];
   
     return [...userPlaces, ...externalPlaces];
-  }, [placesData?.places, externalPlacesData?.places, initialPlaces]);
+  }, [placesData?.places, externalPlacesData?.places]);
 
   const [mounted, setMounted] = useState(false);
-  const isPageLoading = isLoading || isMetaLoading;
+  const isPageLoading = isLoading;
 
   useEffect(() => {
     setMounted(true);
@@ -326,13 +323,13 @@ export default function PlacesClient({
           await res.json();
   
           return current ?? {
-            places: placesData?.places ?? initialPlaces,
-            total: (placesData?.places ?? initialPlaces).length,
+            places: placesData?.places ?? [],
+            total: placesData?.places?.length ?? 0,
           };
         },
         {
           optimisticData: (current) => {
-            const currentPlaces = current?.places ?? placesData?.places ?? initialPlaces;
+            const currentPlaces = current?.places ?? placesData?.places ?? [];
   
             return {
               places: updatePlaceFavoriteState(
@@ -357,7 +354,8 @@ export default function PlacesClient({
   function handleCreated(newPlace: Place) {
     mutate(
       (current) => {
-        const currentPlaces = current?.places ?? places;
+        const currentPlaces = current?.places ?? [];
+  
         return {
           places: [newPlace, ...currentPlaces],
           total: (current?.total ?? currentPlaces.length) + 1,
