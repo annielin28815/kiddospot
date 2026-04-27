@@ -188,6 +188,9 @@ export default function PlacesClient({
         total: 0,
       },
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 1000 * 60 * 10,
+      keepPreviousData: true,
     }
   );
   

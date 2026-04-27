@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/src/lib/prisma";
 import { Prisma, ExternalSourceType } from "@prisma/client";
 
+export const revalidate = 3600;
+
 function getSourceLabel(sourceType: ExternalSourceType) {
   switch (sourceType) {
     case "GOV_FAMILY_TOILET":
@@ -18,6 +20,7 @@ function getSourceLabel(sourceType: ExternalSourceType) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+
     const keyword = searchParams.get("keyword")?.trim() || "";
     const sourceTypes = searchParams.getAll("sourceTypes") as ExternalSourceType[];
     const facilityNames = searchParams.getAll("facilityNames");
@@ -29,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     const where: Prisma.ExternalPlaceWhereInput = {
       isActive: true,
-    
+
       ...(keyword && {
         OR: [
           { name: { contains: keyword, mode: "insensitive" } },
@@ -39,13 +42,13 @@ export async function GET(req: NextRequest) {
           { district: { contains: keyword, mode: "insensitive" } },
         ],
       }),
-    
+
       ...(validSourceTypes.length > 0 && {
         sourceType: {
           in: validSourceTypes,
         },
       }),
-    
+
       ...(facilityNames.length > 0 && {
         facilities: {
           some: {
@@ -57,7 +60,7 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-    
+
       ...(hasLatLngOnly && {
         lat: { not: null },
         lng: { not: null },
@@ -66,15 +69,28 @@ export async function GET(req: NextRequest) {
 
     const externalPlaces = await prisma.externalPlace.findMany({
       where,
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        lat: true,
+        lng: true,
+        createdAt: true,
+        sourceType: true,
+        city: true,
+        district: true,
+        phone: true,
+        openTime: true,
+        note: true,
+        officialUrl: true,
         facilities: {
-          include: {
-            facility: true,
+          select: {
+            facility: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -109,17 +125,24 @@ export async function GET(req: NextRequest) {
       note: place.note,
       officialUrl: place.officialUrl,
 
-      // tags: place.tags.map((item) => item.tag),
       tags: [],
       facilities: place.facilities.map((item) => item.facility),
     }));
 
-    return NextResponse.json({
-      places: formattedPlaces,
-      total: formattedPlaces.length,
-    });
+    return NextResponse.json(
+      {
+        places: formattedPlaces,
+        total: formattedPlaces.length,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    );
   } catch (error) {
     console.error("GET /api/external-places failed:", error);
+
     return NextResponse.json(
       { error: "Failed to fetch external places" },
       { status: 500 }
