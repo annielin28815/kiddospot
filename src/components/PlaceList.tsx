@@ -70,7 +70,7 @@ const sharedTheme = {
       "border-white/40 bg-white/60 text-[#8F7B70] hover:bg-white dark:bg-white/10 dark:border-white/10 dark:text-[#CBBDB2] dark:hover:bg-white/20",
   },
 
-  selected: "border-[#3A2E2A]/15 dark:border-white/10",
+  selected: "bg-[#F7D0B0] border-brand-peach/80 dark:bg-[rgba(244,162,97,0.14)] dark:border-brand-peach/65",
   hover: "border-white/60 dark:border-white/10",
 };
 

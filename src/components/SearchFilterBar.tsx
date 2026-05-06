@@ -220,8 +220,8 @@ export default function SearchFilterBar({
           <div className="fixed inset-0 z-[1200]">
             <div className={ui.overlay} onClick={closeSheet} />
 
-            <div className="absolute inset-x-0 bottom-0 md:flex md:items-center md:justify-center md:p-6">
-              <div className={`${ui.sheetBase} w-full md:max-w-2xl md:rounded-3xl`}>
+            <div className="absolute inset-x-0 bottom-0 flex justify-center md:inset-0 md:items-center md:p-6">
+              <div className={`${ui.sheetBase} mx-auto w-full md:max-w-2xl md:rounded-3xl md:animate-[fadeIn_0.25s_ease-out]`}>
                 
                 {/* handle */}
                 <div className={ui.sheetHandleWrap}>

@@ -21,7 +21,7 @@ export const ui = {
     "cursor-pointer",
 
   cardSelected:
-    "ring-2 ring-white/60 shadow-[0_8px_24px_rgba(58,46,42,0.10)] dark:ring-white/10",
+    "ring-2 ring-brand-peach/30 shadow-[0_12px_28px_rgba(244,162,97,0.22)] dark:ring-brand-peach/35 dark:shadow-[0_12px_30px_rgba(244,162,97,0.18)]",
 
   cardHover:
     "-translate-y-[2px] shadow-[0_10px_24px_rgba(58,46,42,0.08)]",
